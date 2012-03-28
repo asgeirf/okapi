@@ -38,9 +38,6 @@ import org.yaml.snakeyaml.Yaml;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class YamlConfigurationReader {
-	private static final String REGEX_META_CHARS_REGEX = "[\\(\\[\\{\\^\\$\\|\\]\\}\\)\\?\\*\\+]+";
-	private static final Pattern REGEX_META_CHARS_PATTERN = Pattern.compile(REGEX_META_CHARS_REGEX);
-
 	private boolean preserveWhitespace;
 	private Yaml yaml;
 	private Map<String, Object> config;
@@ -251,8 +248,8 @@ public class YamlConfigurationReader {
 	private void findRegexRules() {
 		for (String r : elementRules.keySet()) {
 			try {
-				Matcher m = REGEX_META_CHARS_PATTERN.matcher(r);
-				if (m.find()) {
+				Map rule = (Map)elementRules.get(r);
+				if (rule.containsKey("regex")) {
 					elementRegexRules.put(r, elementRules.get(r));
 				}
 			} catch (PatternSyntaxException e) {
@@ -262,8 +259,8 @@ public class YamlConfigurationReader {
 
 		for (String r : attributeRules.keySet()) {
 			try {
-				Matcher m = REGEX_META_CHARS_PATTERN.matcher(r);
-				if (m.find()) {
+				Map rule = (Map)attributeRules.get(r);
+				if (rule.containsKey("regex")) {
 					attributeRegexRules.put(r, attributeRules.get(r));
 				}
 			} catch (PatternSyntaxException e) {
@@ -276,7 +273,8 @@ public class YamlConfigurationReader {
 		if (!elementRegexRules.isEmpty()) {
 			elementCompiledRegexRules = new HashMap<String, Pattern>();
 			for (String r : elementRegexRules.keySet()) {
-				Pattern compiledRegex = Pattern.compile(r);
+				Map<String, String> rule = (Map<String, String>)elementRegexRules.get(r);
+				Pattern compiledRegex = Pattern.compile(rule.get("regex"));
 				elementCompiledRegexRules.put(r, compiledRegex);
 			}
 		}
@@ -284,7 +282,8 @@ public class YamlConfigurationReader {
 		if (!attributeRegexRules.isEmpty()) {
 			attributeCompiledRegexRules = new HashMap<String, Pattern>();
 			for (String r : attributeRegexRules.keySet()) {
-				Pattern compiledRegex = Pattern.compile(r);
+				Map<String, String> rule = (Map<String, String>)attributeRules.get(r);
+				Pattern compiledRegex = Pattern.compile(rule.get("regex"));
 				attributeCompiledRegexRules.put(r, compiledRegex);
 			}
 		}

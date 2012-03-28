@@ -361,10 +361,10 @@ elements:
   stylesheet:
     ruleTypes: [EXCLUDE]
   
-#  # Included elements
-#  '.*':
-#    ruleTypes: [INCLUDE]
-#    conditions: [translate, EQUALS, 'yes']
+  # Included elements
+  '.*':
+    ruleTypes: [INCLUDE]
+    conditions: [translate, EQUALS, 'yes']
     
   # javascript etc.
   script:

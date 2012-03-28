@@ -14,7 +14,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.beans.EventSetDescriptor;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -432,7 +431,7 @@ public class HtmlSnippetsTest {
 		assertNull(tu);
 	}
 	
-	//@Test
+	@Test
 	public void testPBlockTranslateAttribute() {
 		String snippet = "<p translate='no'>no trans</p><p>Text <span translate='no'>no-trans</span></p>";
 		ITextUnit tu = FilterTestDriver.getTextUnit(getEvents(snippet), 1);
@@ -450,7 +449,7 @@ public class HtmlSnippetsTest {
 		assertNull(tu);
 	}
 	
-	//@Test
+	@Test
 	public void testDivBlockExcludeIncludeTranslateAttribute() {
 		String snippet = "<div translate='no'>no <div translate='yes'>trans</div></div>";
 		ITextUnit tu = FilterTestDriver.getTextUnit(getEvents(snippet), 1);

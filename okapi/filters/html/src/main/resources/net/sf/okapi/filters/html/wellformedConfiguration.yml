@@ -375,7 +375,8 @@ elements:
     ruleTypes: [INLINE]
   
   # Excluded elements
-  '.*':
+  WILD_CARD_EXCLUDE:
+    regex: '.*'
     ruleTypes: [EXCLUDE]
     conditions: [translate, EQUALS, 'no']
     
@@ -385,10 +386,11 @@ elements:
   stylesheet:
     ruleTypes: [EXCLUDE]
   
-#  # Included elements
-#  '.*':
-#    ruleTypes: [INCLUDE]
-#    conditions: [translate, EQUALS, 'yes']
+  # Included elements
+  WILD_CARD_INCLUDE:
+    regex: '.*'
+    ruleTypes: [INCLUDE]
+    conditions: [translate, EQUALS, 'yes']
     
   # javascript etc.
   script:
