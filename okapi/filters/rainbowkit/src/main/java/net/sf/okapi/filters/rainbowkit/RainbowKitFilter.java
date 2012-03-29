@@ -52,7 +52,7 @@ import net.sf.okapi.filters.po.POFilter;
 import net.sf.okapi.filters.rtf.RTFFilter;
 import net.sf.okapi.filters.transtable.TransTableFilter;
 import net.sf.okapi.filters.versifiedtxt.VersifiedTextFilter;
-import net.sf.okapi.filters.xini.XINIFilter;
+import net.sf.okapi.filters.xini.rainbowkit.XINIRainbowkitFilter;
 import net.sf.okapi.filters.xliff.XLIFFFilter;
 import net.sf.okapi.lib.transifex.TransifexClient;
 
@@ -346,7 +346,7 @@ public class RainbowKitFilter implements IFilter {
 		}
 		else if ( info.getExtractionType().equals(Manifest.EXTRACTIONTYPE_ONTRAM) ) {
 			file = new File(manifest.getTempTargetDirectory()+"contents.xini");
-			filter =  new XINIFilter(info.getRelativeInputPath());
+			filter =  new XINIRainbowkitFilter(info.getRelativeInputPath());
 		}
 		else if ( info.getExtractionType().equals(Manifest.EXTRACTIONTYPE_VERSIFIED_RTF) ) {
 			// RTF layer already removed by user

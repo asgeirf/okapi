@@ -109,7 +109,6 @@ public class Indexer implements Runnable {
 				}
 			}
 			writer.commit();
-			
 		}
 		catch ( Throwable e ) {
 			callback.logMessage(IProgressCallback.MSGTYPE_ERROR, e.getMessage());

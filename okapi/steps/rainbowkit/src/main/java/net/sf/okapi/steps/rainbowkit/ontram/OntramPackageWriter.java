@@ -24,16 +24,16 @@ import net.sf.okapi.common.Event;
 import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.filters.rainbowkit.Manifest;
 import net.sf.okapi.filters.rainbowkit.MergingInfo;
-import net.sf.okapi.filters.xini.XINIWriter;
+import net.sf.okapi.filters.xini.rainbowkit.XINIRainbowkitWriter;
 import net.sf.okapi.steps.rainbowkit.common.BasePackageWriter;
 
 public class OntramPackageWriter extends BasePackageWriter {
 
-	private XINIWriter writer;
+	private XINIRainbowkitWriter writer;
 
 	public OntramPackageWriter() {
 		super(Manifest.EXTRACTIONTYPE_ONTRAM);
-		writer = new XINIWriter();
+		writer = new XINIRainbowkitWriter();
 	}
 
 	@Override
@@ -41,7 +41,7 @@ public class OntramPackageWriter extends BasePackageWriter {
 		manifest.setSubDirectories("original", "xini", "xini", "translated", null, false);
 		setTMXInfo(false, null, false, false);
 
-		writer = new XINIWriter();
+		writer = new XINIRainbowkitWriter();
 		writer.setOutputPath(manifest.getTempSourceDirectory() + "contents.xini");
 		
 		writer.init();

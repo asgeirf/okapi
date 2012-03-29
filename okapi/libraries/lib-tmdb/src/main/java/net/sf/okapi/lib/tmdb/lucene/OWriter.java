@@ -1,5 +1,5 @@
 /*===========================================================================
-  Copyright (C) 2008-2011 by the Okapi Framework contributors
+  Copyright (C) 2008-2012 by the Okapi Framework contributors
 -----------------------------------------------------------------------------
   This library is free software; you can redistribute it and/or modify it
   under the terms of the GNU Lesser General Public License as published by
@@ -45,12 +45,9 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
 
 /**
+ * Used to write, delete and update the index.
  * All files in this package are based on the files by @author HaslamJD and @author HARGRAVEJE 
  * in the okapi-tm-pensieve project and in most cases there are only minor changes.
- */
-
-/**
- * Used to write, delete and update the index.
  */
 public class OWriter {
 	
@@ -68,9 +65,12 @@ public class OWriter {
 	 * @throws IOException
 	 *             if the indexDirectory can not load
 	 */
-	public OWriter(Directory indexDirectory, boolean createNewTmIndex) throws IOException {
+	public OWriter (Directory indexDirectory,
+		boolean createNewTmIndex)
+		throws IOException
+	{
 		IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_31, new NgramAnalyzer(Locale.ENGLISH, 4));
-		iwc.setOpenMode(OpenMode.CREATE);
+		iwc.setOpenMode(createNewTmIndex ? OpenMode.CREATE: OpenMode.CREATE_OR_APPEND);
 		indexWriter = new IndexWriter(indexDirectory, iwc);
 	}
 
@@ -83,26 +83,28 @@ public class OWriter {
 	public void close () {
 		try {
 			indexWriter.commit();		
-		} catch (IOException e) {
+		}
+		catch ( IOException e ) {
 			throw new OkapiIOException(e); // To change body of catch statement use File | Settings | File Templates.
-		} catch (AlreadyClosedException ignored) {
-		} finally {
+		}
+		catch ( AlreadyClosedException ignored ) {
+		}
+		finally {
 			try {
 				indexWriter.close();
-			} catch (IOException ignored) {
-				LOGGER.log(Level.WARNING, "Exception closing Pensieve IndexWriter.", ignored); //$NON-NLS-1$
+			}
+			catch ( IOException ignored ) {
+				LOGGER.log(Level.WARNING, "Exception closing index.", ignored); //$NON-NLS-1$
 			}
 		}
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 */
-	public void commit() {
+	public void commit () {
 		try {
 			indexWriter.commit();
-		} catch (IOException e) {
-			throw new OkapiIOException(e);
+		}
+		catch ( IOException e ) {
+			throw new OkapiIOException("Error when committing.", e);
 		}
 	}
 	
@@ -128,23 +130,27 @@ public class OWriter {
 	 *             if tu is null
 	 */
 	public void index (OTranslationUnitInput tu) {
-		if (tu == null) {
+		if ( tu == null ) {
 			throw new NullPointerException("TextUnit can not be null");
 		}
 		Document doc = createDocument(tu);
-		if (doc != null) {
+		if ( doc != null ) {
 			try {
 				indexWriter.addDocument(doc);
-			} catch (CorruptIndexException e) {
+			}
+			catch ( CorruptIndexException e ) {
 				throw new OkapiIOException(
-						"Error adding a translationUnit to the TM. Corrupted index.", e);
-			} catch (IOException e) {
+					"Error adding a translationUnit to the TM. Corrupted index.", e);
+			}
+			catch ( IOException e ) {
 				throw new OkapiIOException("Error adding a translationUnit to the TM.", e);
 			}
 		}
 	}
 
-	public void index (OTranslationUnitInput tu, boolean overwrite) {
+	public void index (OTranslationUnitInput tu,
+		boolean overwrite)
+	{
 		if ( tu == null ) {
 			throw new NullPointerException("TextUnit can not be null.");
 		}
@@ -208,14 +214,16 @@ public class OWriter {
 	 * @throws IllegalArgumentException if the id is invalid
 	 */
 	public void delete (OField id) {
-		if (id == null || Util.isEmpty(id.getName()) || Util.isEmpty(id.getValue())) {
-			throw new IllegalArgumentException("id is a required field for delete to happen");
+		if (( id == null ) || Util.isEmpty(id.getName()) || Util.isEmpty(id.getValue())) {
+			throw new IllegalArgumentException("Id is a required field for delete to happen");
 		}
 		try {
 			indexWriter.deleteDocuments(new Term(id.getName(), id.getValue()));
-		} catch (CorruptIndexException e) {
+		}
+		catch ( CorruptIndexException e ) {
 			throw new OkapiIOException("Error deleting a translationUnit from the TM. Corrupted index.", e);
-		} catch (IOException e) {
+		}
+		catch ( IOException e ) {
 			throw new OkapiIOException("Error deleting a translationUnit from the TM.", e);
 		}
 	}
@@ -228,10 +236,9 @@ public class OWriter {
 	 * @throws IllegalArgumentException if the tu or MetadataType.ID is null
 	 */
 	public void update (OTranslationUnitInput tu) {
-		if (tu == null || tu.getId() == null) {
+		if (( tu == null ) || ( tu.getId() == null )) {
 			throw new IllegalArgumentException("tu must be set and have its ID set");
 		}
-		// TODO -- make this transactional
 		delete(tu.getId());
 		index(tu);
 	}
@@ -241,8 +248,10 @@ public class OWriter {
 	 * @param doc
 	 * @param fields
 	 */
-	void addFieldsToDocument(Document doc, OFields fields) {
-		for (OField field : fields.values()) {
+	void addFieldsToDocument (Document doc,
+		OFields fields)
+	{
+		for ( OField field : fields.values() ) {
 			doc.add(new Field(field.getName(), field.getValue(), field.getStore(), field.getIndex()));
 		}
 	}

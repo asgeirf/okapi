@@ -1,5 +1,5 @@
 /*===========================================================================
-  Copyright (C) 2009-2011 by the Okapi Framework contributors
+  Copyright (C) 2009-2012 by the Okapi Framework contributors
 -----------------------------------------------------------------------------
   This library is free software; you can redistribute it and/or modify it 
   under the terms of the GNU Lesser General Public License as published by 
@@ -198,8 +198,7 @@ public class XSLTransformStep extends BasePipelineStep {
 			// Create the output
 			File outFile;
 			if ( isLastOutputStep() ) {
-				outFile = new File(outputURI);
-				Util.createDirectories(outFile.getAbsolutePath());
+				outFile = rawDoc.createOutputFile(outputURI);
 			}
 			else {
 				try {
@@ -215,6 +214,9 @@ public class XSLTransformStep extends BasePipelineStep {
 			
 			// Apply the template
 			trans.transform(xmlInput, result);
+			
+			// Make sure to rename the temporary output if needed
+			rawDoc.finalizeOutput();
 			
 			// Create the new raw-document resource
 			event.setResource(new RawDocument(outFile.toURI(), "UTF-8", 

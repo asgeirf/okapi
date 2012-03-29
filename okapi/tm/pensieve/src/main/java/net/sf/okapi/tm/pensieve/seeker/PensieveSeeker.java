@@ -53,6 +53,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -85,7 +86,9 @@ public class PensieveSeeker implements ITmSeeker, Iterable<TranslationUnit> {
 	private int maxTopDocuments;
 	private Directory indexDir;
 	private IndexReader indexReader;
+	private IndexWriter indexWriter;
 	private IndexSearcher indexSearcher;
+	private boolean nrtMode;
 
 	/**
 	 * Creates an instance of TMSeeker
@@ -100,6 +103,24 @@ public class PensieveSeeker implements ITmSeeker, Iterable<TranslationUnit> {
 			throw new IllegalArgumentException("'indexDir' cannot be null!");
 		}
 		this.indexDir = indexDir;
+		nrtMode = false;
+	}
+	
+	/**
+	 * Creates an instance of TMSeeker. This constructor is used for near-real-time (NRT)
+	 * mode to make index changes visible to a new searcher with fast turn-around time.
+	 * 
+	 * @param indexWriter
+	 *            The IndexWriter implementation to use for the queries, needed for NRT
+	 * @throws IllegalArgumentException
+	 *            If the indexDir is not set
+	 */
+	public PensieveSeeker(IndexWriter indexWriter) throws IllegalArgumentException {
+		if (indexWriter == null) {
+			throw new IllegalArgumentException("'indexWriter' cannot be null!");
+		}
+		this.indexWriter = indexWriter;
+		nrtMode = true;
 	}
 
 	/**
@@ -210,24 +231,31 @@ public class PensieveSeeker implements ITmSeeker, Iterable<TranslationUnit> {
 	}
 
 	protected IndexSearcher createIndexSearcher() throws CorruptIndexException, IOException {
+		if (indexSearcher != null) indexSearcher.close();
 		return new IndexSearcher(openIndexReader());
 	}
 
 	protected IndexSearcher getIndexSearcher() throws CorruptIndexException, IOException {
-		if (indexSearcher != null) {
+		if (indexSearcher != null && !nrtMode) {
 			return indexSearcher;
 		}
+		// NRT should create a new index searcher at every search fuzzy call 
 		indexSearcher = createIndexSearcher();
 		return indexSearcher;
 	}
 
 	protected IndexReader openIndexReader() throws CorruptIndexException, IOException {
-		if (indexReader == null) {
-			indexReader = IndexReader.open(indexDir, true);
+		if (indexReader == null) {			
+			indexReader = nrtMode ?
+					IndexReader.open(indexWriter, true) : 
+					IndexReader.open(indexDir, true);
 			maxTopDocuments = (int) ((float) indexReader.maxDoc() * MAX_HITS_RATIO);
 			if (maxTopDocuments < MIN_MAX_HITS) {
 				maxTopDocuments = MIN_MAX_HITS;
 			}
+		}
+		else if (nrtMode) {
+			indexReader = indexReader.reopen();
 		}
 		return indexReader;
 	}

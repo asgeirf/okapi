@@ -183,7 +183,14 @@ public class ProjectUtils {
 				tkitParams.setPackageDirectory(WorkspaceUtils.getOutputDirPath(projId));
 				step.paramsData = tkitParams.toString();
 			}
-			//TODO TKit Merge
+			//TKit Merge
+			if (step.stepClass.equals(MergingStep.class.getName())) {
+				net.sf.okapi.steps.rainbowkit.postprocess.Parameters tkitParams = 
+						new net.sf.okapi.steps.rainbowkit.postprocess.Parameters();
+				tkitParams.fromString(step.paramsData);
+				tkitParams.setOverrideOutputPath(WorkspaceUtils.getOutputDirPath(projId));
+				step.paramsData = tkitParams.toString();
+			}
 		}
 	}
 

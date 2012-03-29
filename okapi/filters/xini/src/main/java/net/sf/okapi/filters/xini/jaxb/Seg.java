@@ -4,6 +4,7 @@ package net.sf.okapi.filters.xini.jaxb;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -18,6 +19,8 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;extension base="{}TextContent">
  *       &lt;attribute name="SegID" use="required" type="{http://www.w3.org/2001/XMLSchema}int" />
  *       &lt;attribute name="SubSeg" type="{http://www.w3.org/2001/XMLSchema}int" />
+ *       &lt;attribute name="SegmentIDBeforeSegmentation" type="{http://www.w3.org/2001/XMLSchema}int" />
+ *       &lt;attribute name="LeadingSpacer" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="TrailingSpacer" type="{http://www.w3.org/2001/XMLSchema}string" />
  *       &lt;attribute name="EmptyTranslation" type="{http://www.w3.org/2001/XMLSchema}boolean" />
  *     &lt;/extension>
@@ -29,6 +32,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Seg")
+@XmlRootElement
 public class Seg
     extends TextContent
 {
@@ -37,6 +41,10 @@ public class Seg
     protected int segID;
     @XmlAttribute(name = "SubSeg")
     protected Integer subSeg;
+    @XmlAttribute(name = "SegmentIDBeforeSegmentation")
+    protected Integer segmentIDBeforeSegmentation;
+    @XmlAttribute(name = "LeadingSpacer")
+    protected String leadingSpacer;
     @XmlAttribute(name = "TrailingSpacer")
     protected String trailingSpacer;
     @XmlAttribute(name = "EmptyTranslation")
@@ -80,6 +88,54 @@ public class Seg
      */
     public void setSubSeg(Integer value) {
         this.subSeg = value;
+    }
+
+    /**
+     * Gets the value of the segmentIDBeforeSegmentation property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Integer }
+     *     
+     */
+    public Integer getSegmentIDBeforeSegmentation() {
+        return segmentIDBeforeSegmentation;
+    }
+
+    /**
+     * Sets the value of the segmentIDBeforeSegmentation property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Integer }
+     *     
+     */
+    public void setSegmentIDBeforeSegmentation(Integer value) {
+        this.segmentIDBeforeSegmentation = value;
+    }
+
+    /**
+     * Gets the value of the leadingSpacer property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getLeadingSpacer() {
+        return leadingSpacer;
+    }
+
+    /**
+     * Sets the value of the leadingSpacer property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLeadingSpacer(String value) {
+        this.leadingSpacer = value;
     }
 
     /**

@@ -211,6 +211,12 @@ public class Tm implements ITm {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	@Override
+	public boolean getHasIndex () {
+		//TODO: store the info 
+		return true;
+	}
 
 	@Override
 	public List<String> getAvailableFields () {
@@ -917,7 +923,6 @@ public class Tm implements ITm {
 				
 				pstmUpdSeg = store.getConnection().prepareStatement(tmp.toString());
 			}
-//TODO: support the various filed types!
 			// Fill the statement
 			int i = 1;
 			for ( String fn : segFields.keySet() ) {
@@ -932,6 +937,11 @@ public class Tm implements ITm {
 			// Fill the SegKey value
 			pstmUpdSeg.setLong(i, segKey);
 			pstmUpdSeg.execute();
+			
+			//TODO: Update the TM index if we have one
+			//TODO: Check if this TM is indexed
+//			IIndexAccess ia = store.getIndexAccess();
+//			ia.getWriter().update(tu)
 			
 		}
 		catch ( SQLException e ) {

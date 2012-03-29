@@ -251,11 +251,7 @@ public class Element {
      *     
      */
     public ElementType getElementType() {
-        if (elementType == null) {
-            return ElementType.EDITIBLE_TEXT;
-        } else {
-            return elementType;
-        }
+        return elementType;
     }
 
     /**

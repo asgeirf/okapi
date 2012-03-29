@@ -81,7 +81,7 @@ public class Manifest implements IAnnotation {
 	private String targetSubDir;
 	private String tmSubDir;
 	private String mergeSubDir;
-//	private String originalDir;
+	private String originalDir;
 	private String tempOriginalDir;
 //	private String sourceDir;
 	private String tempSourceDir;
@@ -244,6 +244,14 @@ public class Manifest implements IAnnotation {
 	 */
 	public String getTempTargetDirectory () {
 		return tempTargetDir;
+	}
+	
+	/**
+	 * Gets the directory where to store the original files (always with a terminal separator).
+	 * @return the directory where to store the original files.
+	 */
+	public String getOriginalDirectory () {
+		return originalDir;
 	}
 	
 	/**
@@ -599,7 +607,7 @@ public class Manifest implements IAnnotation {
 	}
 
 	private void updateFullDirectories () {
-//		originalDir = Util.ensureSeparator(packageRoot + originalSubDir, false);
+		originalDir = Util.ensureSeparator(packageRoot + originalSubDir, false);
 //		sourceDir = Util.ensureSeparator(packageRoot + sourceSubDir, false);
 //		targetDir = Util.ensureSeparator(packageRoot + targetSubDir, false);
 		mergeDir = Util.ensureSeparator(packageRoot + mergeSubDir, false);

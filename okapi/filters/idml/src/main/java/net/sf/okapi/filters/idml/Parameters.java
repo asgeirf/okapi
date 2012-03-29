@@ -1,5 +1,5 @@
 /*===========================================================================
-  Copyright (C) 2009-2011 by the Okapi Framework contributors
+  Copyright (C) 2009-2012 by the Okapi Framework contributors
 -----------------------------------------------------------------------------
   This library is free software; you can redistribute it and/or modify it 
   under the terms of the GNU Lesser General Public License as published by 
@@ -25,6 +25,7 @@ import net.sf.okapi.common.EditorFor;
 import net.sf.okapi.common.ParametersDescription;
 import net.sf.okapi.common.uidescription.EditorDescription;
 import net.sf.okapi.common.uidescription.IEditorDescriptionProvider;
+import net.sf.okapi.common.uidescription.SpinInputPart;
 
 @EditorFor(Parameters.class)
 public class Parameters extends BaseParameters implements IEditorDescriptionProvider {
@@ -32,10 +33,12 @@ public class Parameters extends BaseParameters implements IEditorDescriptionProv
 	private static final String EXTRACTNOTES = "extractNotes";
 	private static final String SIMPLIFYCODES = "simplifyCodes";
 	private static final String EXTRACTMASTERSPREADS = "extractMasterSpreads";
+	private static final String SKIPTHRESHOLD = "skipThreshold";
 
 	private boolean extractNotes;
 	private boolean simplifyCodes;
 	private boolean extractMasterSpreads;
+	private int skipThreshold;
 
 	public Parameters () {
 		reset();
@@ -46,6 +49,7 @@ public class Parameters extends BaseParameters implements IEditorDescriptionProv
 		extractNotes = false;
 		simplifyCodes = true;
 		extractMasterSpreads = true;
+		skipThreshold = 1000;
 	}
 
 	public void fromString (String data) {
@@ -54,6 +58,7 @@ public class Parameters extends BaseParameters implements IEditorDescriptionProv
 		extractNotes = buffer.getBoolean(EXTRACTNOTES, extractNotes);
 		simplifyCodes = buffer.getBoolean(SIMPLIFYCODES, simplifyCodes);
 		extractMasterSpreads = buffer.getBoolean(EXTRACTMASTERSPREADS, extractMasterSpreads);
+		skipThreshold = buffer.getInteger(SKIPTHRESHOLD, skipThreshold);
 	}
 	
 	@Override
@@ -62,6 +67,7 @@ public class Parameters extends BaseParameters implements IEditorDescriptionProv
 		buffer.setBoolean(EXTRACTNOTES, extractNotes);
 		buffer.setBoolean(SIMPLIFYCODES, simplifyCodes);
 		buffer.setBoolean(EXTRACTMASTERSPREADS, extractMasterSpreads);
+		buffer.setInteger(SKIPTHRESHOLD, skipThreshold);
 		return buffer.toString();
 	}
 
@@ -88,6 +94,14 @@ public class Parameters extends BaseParameters implements IEditorDescriptionProv
 	public void setExtractMasterSpreads (boolean extractMasterSpreads) {
 		this.extractMasterSpreads = extractMasterSpreads;
 	}
+	
+	public int getSkipThreshold () {
+		return skipThreshold;
+	}
+	
+	public void setSkipThreshold (int skipThreshold) {
+		this.skipThreshold = skipThreshold;
+	}
 
 	@Override
 	public ParametersDescription getParametersDescription() {
@@ -95,6 +109,7 @@ public class Parameters extends BaseParameters implements IEditorDescriptionProv
 		desc.add(EXTRACTNOTES, "Extract notes", null);
 		desc.add(EXTRACTMASTERSPREADS, "Extract master spreads", null);
 		desc.add(SIMPLIFYCODES, "Simplify inline codes when possible", null);
+		desc.add(SKIPTHRESHOLD, "Maximum spread size", "Skip any spread larger than the given value (in Kbytes)");
 		return desc;
 	}
 
@@ -104,6 +119,8 @@ public class Parameters extends BaseParameters implements IEditorDescriptionProv
 		
 		desc.addCheckboxPart(paramsDesc.get(EXTRACTNOTES));
 		desc.addCheckboxPart(paramsDesc.get(EXTRACTMASTERSPREADS));
+		SpinInputPart sip = desc.addSpinInputPart(paramsDesc.get(SKIPTHRESHOLD));
+		sip.setRange(1, 32000);
 		desc.addSeparatorPart();
 		desc.addCheckboxPart(paramsDesc.get(SIMPLIFYCODES));
 		

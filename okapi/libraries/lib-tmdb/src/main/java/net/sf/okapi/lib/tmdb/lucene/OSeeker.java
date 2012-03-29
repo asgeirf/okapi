@@ -1,5 +1,5 @@
 /*===========================================================================
-  Copyright (C) 2008-2009 by the Okapi Framework contributors
+  Copyright (C) 2008-2012 by the Okapi Framework contributors
 -----------------------------------------------------------------------------
   This library is free software; you can redistribute it and/or modify it 
   under the terms of the GNU Lesser General Public License as published by 
@@ -45,6 +45,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
@@ -58,15 +59,12 @@ import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.Directory;
 
 /**
- * All files in this package are based on the files by @author HaslamJD and @author HARGRAVEJE in the okapi-tm-pensieve project amd in most cases there are only minor changes.
- */
-
-/**
- * 
+ * All files in this package are based on the files by @author HaslamJD and @author HARGRAVEJE
+ * in the okapi-tm-pensieve project amd in most cases there are only minor changes.
  * @author fliden
- *
  */
 public class OSeeker {
+
 	private static final Logger LOGGER = Logger.getLogger(OSeeker.class.getName());
 
 	private final static NgramAnalyzer defaultFuzzyAnalyzer = new NgramAnalyzer(Locale.ENGLISH, 4);
@@ -74,28 +72,53 @@ public class OSeeker {
 	private final static int MIN_MAX_HITS = 500;
 	// TODO: externalize penalties in the future
 	private static float SINGLE_CODE_DIFF_PENALTY = 0.5f;
-	private static float WHITESPACE_OR_CASE_PENALTY = 2.0f;
+	private static float WHITESPACE_OR_CASE_PENALTY = 1.0f;
 
 	// maxTopDocuments = indexReader.maxDoc * MAX_HITS_CONSTANT
 	private int maxTopDocuments;
 	private Directory indexDir;
 	private IndexReader indexReader;
 	private IndexSearcher indexSearcher;
+	private IndexWriter indexWriter;
+	private boolean nrtMode;
 
 	/**
-	 * Creates an instance of TMSeeker
+	 * Creates an instance of OSeeker
 	 * 
 	 * @param indexDir
 	 *            The Directory implementation to use for the queries
 	 * @throws IllegalArgumentException
 	 *             If the indexDir is not set
 	 */
-	public OSeeker(Directory indexDir) throws IllegalArgumentException {
-		if (indexDir == null) {
+	public OSeeker (Directory indexDir)
+		throws IllegalArgumentException
+	{
+		if ( indexDir == null ) {
 			throw new IllegalArgumentException("'indexDir' cannot be null!");
 		}
 		this.indexDir = indexDir;
+		nrtMode = false;
 	}
+	
+	/**
+	 * Creates an instance of OSeeker.
+	 * This constructor is used for near-real-time (NRT) mode to make index changes
+	 * visible to a new searcher with fast turn-around time.
+	 *
+	 * @param indexWriter
+	 *            The IndexWriter implementation to use for the queries, needed for NRT
+	 * @throws IllegalArgumentException
+	 *            If the indexDir is not set
+	 */
+	public OSeeker (IndexWriter indexWriter)
+		throws IllegalArgumentException
+	{
+		if ( indexWriter == null ) {
+			throw new IllegalArgumentException("'indexWriter' cannot be null!");
+		}
+		this.indexWriter = indexWriter;
+		nrtMode = true;
+	}	
 
 	/**
 	 * Get the current Lucene {@link Directory}
@@ -110,7 +133,7 @@ public class OSeeker {
 	 * @param fields
 	 * @return
 	 */
-	private BooleanQuery createQuery(OFields fields) {
+	private BooleanQuery createQuery (OFields fields) {
 		return createQuery(fields, null);
 	}
 
@@ -120,7 +143,9 @@ public class OSeeker {
 	 * @param q
 	 * @return
 	 */
-	private BooleanQuery createQuery(OFields fields, Query q) {
+	private BooleanQuery createQuery (OFields fields,
+		Query q)
+	{
 		BooleanQuery bQuery = new BooleanQuery();
 		if (q != null) {
 			bQuery.add(q, BooleanClause.Occur.MUST);
@@ -166,25 +191,36 @@ public class OSeeker {
 		return fieldValue;
 	}
 
-	protected IndexSearcher createIndexSearcher() throws CorruptIndexException, IOException {
+	protected IndexSearcher createIndexSearcher ()
+		throws CorruptIndexException, IOException
+	{
+		if (indexSearcher != null) indexSearcher.close();
 		return new IndexSearcher(openIndexReader());
 	}
 
-	protected IndexSearcher getIndexSearcher() throws CorruptIndexException, IOException {
-		if (indexSearcher != null) {
+	protected IndexSearcher getIndexSearcher ()
+		throws CorruptIndexException, IOException
+	{
+		if (( indexSearcher != null ) && !nrtMode ) {
 			return indexSearcher;
 		}
+		// In NRT mode always create a new searcher
 		indexSearcher = createIndexSearcher();
 		return indexSearcher;
 	}
 
 	protected IndexReader openIndexReader() throws CorruptIndexException, IOException {
-		if (indexReader == null) {
-			indexReader = IndexReader.open(indexDir, true);
+		if ( indexReader == null ) {			
+			indexReader = nrtMode ?
+				IndexReader.open(indexWriter, true) : 
+				IndexReader.open(indexDir, true);
 			maxTopDocuments = (int) ((float) indexReader.maxDoc() * MAX_HITS_RATIO);
 			if (maxTopDocuments < MIN_MAX_HITS) {
 				maxTopDocuments = MIN_MAX_HITS;
 			}
+		}
+		else if ( nrtMode ) {
+			indexReader = indexReader.reopen();
 		}
 		return indexReader;
 	}
@@ -369,19 +405,20 @@ public class OSeeker {
 
 				// These are 100%, adjust match type and penalize for whitespace
 				// and case difference
-				if (score >= 100.0f && tmCodedText.equals(queryFrag.getCodedText())) {
+				if ( score >= 100.0f && tmCodedText.equals(queryFrag.getCodedText()) ) {
 					matchType = MatchType.EXACT;
-				} else if (score >= 100.0f && sourceTextOnly.equals(queryFrag.getText())) {
+				}
+				else if ( score >= 100.0f && sourceTextOnly.equals(queryFrag.getText()) ) {
 					matchType = MatchType.EXACT_TEXT_ONLY;
-				} else if (score >= 100.0f) {
+				}
+				else if ( score >= 100.0f ) {
 					// must be a whitespace or case difference
 					score -= WHITESPACE_OR_CASE_PENALTY;
 				}
-
 				// code penalty
-				if (queryCodes.size() != tmCodes.size()) {
-					score -= (SINGLE_CODE_DIFF_PENALTY * (float) Math.abs(queryCodes.size()
-							- (float) tmCodes.size()));
+				if ( queryCodes.size() != tmCodes.size() ) {
+					score -= (SINGLE_CODE_DIFF_PENALTY
+						* (float)Math.abs(queryCodes.size()-tmCodes.size()));
 				}
 
 				tmHit.setScore(score);
@@ -389,7 +426,7 @@ public class OSeeker {
 
 				// check if the penalties have pushed the match below threshold
 				// add any such hits to a list for later removal
-				if (tmHit.getScore() < threshold) {
+				if ( tmHit.getScore() < threshold ) {
 					tmHitsToRemove.add(tmHit);
 				}
 			}

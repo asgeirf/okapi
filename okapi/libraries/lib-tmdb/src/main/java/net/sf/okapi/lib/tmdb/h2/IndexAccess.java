@@ -30,7 +30,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 
-import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.resource.TextFragment;
 import net.sf.okapi.lib.tmdb.IIndexAccess;
 import net.sf.okapi.lib.tmdb.lucene.OField;
@@ -41,7 +40,6 @@ import net.sf.okapi.lib.tmdb.lucene.OWriter;
 
 class IndexAccess implements IIndexAccess {
 
-	private final Repository store;
 	private OWriter writer;
 	private OSeeker seeker;
 	private boolean inMemory;
@@ -49,7 +47,6 @@ class IndexAccess implements IIndexAccess {
 	
 	public IndexAccess (Repository store) {
 		try {
-			this.store = store;
 			Directory idxDir = null;
 			// Get the location from the repository instance
 			String dir = store.getDirectory();
@@ -66,7 +63,7 @@ class IndexAccess implements IIndexAccess {
 			}
 			
 			writer = new OWriter(idxDir, false);
-			seeker = new OSeeker(idxDir);
+			seeker = new OSeeker(writer.getIndexWriter());
 		}
 		catch (IOException e) {
 			throw new RuntimeException("Error creating the index access object:\n"+e.getMessage(), e);

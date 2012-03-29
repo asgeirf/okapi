@@ -55,10 +55,13 @@ public class Repository implements IRepository {
 		if ( pathNoExt.endsWith(DATAFILE_EXT) ) {
 			pathNoExt = pathNoExt.substring(0, pathNoExt.length()-DATAFILE_EXT.length());
 		}
+		// Delete database files
 		File file = new File(pathNoExt+DATAFILE_EXT);
 		if ( file.exists() ) {
 			file.delete();
 		}
+		// Delete index content and directory
+		Util.deleteDirectory(pathNoExt+".idx", false);
 	}
 
 	/**
@@ -192,6 +195,8 @@ public class Repository implements IRepository {
 			stm.execute("DROP TABLE \""+name+"_TU\"");
 			stm.execute("DROP TABLE \""+name+"_SEG\"");
 			stm.executeUpdate("DELETE FROM TMLIST WHERE NAME='"+name+"'");
+			// Delete indexed entries for the given TM
+			//TODO
 		}
 		catch ( SQLException e ) {
 			throw new RuntimeException(e);

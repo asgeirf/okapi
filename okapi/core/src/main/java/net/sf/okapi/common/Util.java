@@ -262,16 +262,7 @@ public final class Util {
 	 * @return the fixed given path
 	 */
 	public static String fixPath(String path) {
-		String res = path;
-		String saveRes;
-		do {
-			saveRes = res;
-			res = res.replaceAll("\\\\/", "/");
-			res = res.replaceAll("\\\\\\\\", "/");
-			res = res.replaceAll("//", "/");
-			res = res.replaceAll("/\\\\", "/");
-		} while (saveRes != res);
-		return res;
+		return path.replaceAll("[\\\\\\/]+", "/");
 	}
 	
 	/**

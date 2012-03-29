@@ -115,6 +115,32 @@ public class MergingStepTest {
 	}
 	
 	@Test
+	public void testXINIMergingWithOutputPath ()
+		throws URISyntaxException
+	{
+		deleteOutputDir("xiniPack/translated", true);
+		
+		IPipelineDriver pdriver = new PipelineDriver();
+		pdriver.setFilterConfigurationMapper(fcMapper);
+		pdriver.setRootDirectories(Util.deleteLastChar(root), Util.deleteLastChar(root)); // Don't include final separator
+		pdriver.addStep(new RawDocumentToFilterEventsStep());
+		MergingStep mrgStep = new MergingStep();
+		pdriver.addStep(mrgStep);
+		
+		Parameters prm = (Parameters)mrgStep.getParameters();
+		prm.setReturnRawDocument(true);
+		prm.setOverrideOutputPath(root+"output");
+		
+		URI inputURI = new File(root+"xiniPack/manifest.rkm").toURI();
+		pdriver.addBatchItem(new BatchItemContext(inputURI, "UTF-8", "okf_rainbowkit@noPrompt", null, "UTF-8", locEN, locFR));
+		
+		pdriver.processBatch();
+
+		File file = new File(root+"output/test1.out.xlf");
+		assertTrue(file.exists());
+	}
+	
+	@Test
 	public void testPOMerging ()
 		throws URISyntaxException
 	{

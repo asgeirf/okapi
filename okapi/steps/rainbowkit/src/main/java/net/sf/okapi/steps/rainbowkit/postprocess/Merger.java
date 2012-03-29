@@ -32,17 +32,18 @@ import net.sf.okapi.common.IResource;
 import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.MimeTypeMapper;
 import net.sf.okapi.common.Range;
+import net.sf.okapi.common.Util;
 import net.sf.okapi.common.exceptions.OkapiBadFilterInputException;
 import net.sf.okapi.common.filters.IFilter;
 import net.sf.okapi.common.filters.IFilterConfigurationMapper;
 import net.sf.okapi.common.filterwriter.IFilterWriter;
+import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.MultiEvent;
 import net.sf.okapi.common.resource.PipelineParameters;
 import net.sf.okapi.common.resource.Property;
 import net.sf.okapi.common.resource.RawDocument;
 import net.sf.okapi.common.resource.StartDocument;
 import net.sf.okapi.common.resource.TextContainer;
-import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.TextUnitUtil;
 import net.sf.okapi.filters.rainbowkit.Manifest;
 import net.sf.okapi.filters.rainbowkit.MergingInfo;
@@ -61,6 +62,7 @@ public class Merger {
 	private boolean preserveSegmentation;
 	private boolean forceSegmentationInMerge;
 	private boolean returnRawDocument;
+	private String overrideOutputPath;
 	private RawDocument rawDoc;
 	private boolean useSubDoc;
 	
@@ -76,7 +78,8 @@ public class Merger {
 		IFilterConfigurationMapper fcMapper,
 		boolean preserveSegmentation,
 		LocaleId forcedTargetLocale,
-		boolean returnRawDocument)
+		boolean returnRawDocument,
+		String overrideOutputPath)
 	{
 		this.fcMapper = fcMapper;
 		this.manifest = manifest;
@@ -88,6 +91,7 @@ public class Merger {
 		}
 		this.preserveSegmentation = preserveSegmentation;
 		this.returnRawDocument = returnRawDocument;
+		this.overrideOutputPath = overrideOutputPath;
 	}
 	
 	public void close () {
@@ -189,7 +193,7 @@ public class Merger {
 		filter.open(rd);
 		writer = filter.createFilterWriter();
 		writer.setOptions(trgLoc, info.getTargetEncoding());
-		String outPath = manifest.getMergeDirectory()+info.getRelativeTargetPath();
+		String outPath = this.getOutputPath(info);
 		writer.setOutput(outPath);
 		
 		// Skip entries with empty source for PO
@@ -231,6 +235,14 @@ public class Merger {
 		}
 		
 		return event;
+	}
+	
+	private String getOutputPath(MergingInfo info) {
+		if (Util.isEmpty(this.overrideOutputPath)) {
+			return manifest.getMergeDirectory() + info.getRelativeTargetPath();
+		} else {
+			return Util.ensureSeparator(overrideOutputPath, false) + info.getRelativeTargetPath();
+		}
 	}
 
 	private void flushFilterEvents () {

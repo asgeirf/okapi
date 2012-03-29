@@ -43,8 +43,10 @@ import net.sf.okapi.tm.pensieve.common.TmHit;
 import net.sf.okapi.tm.pensieve.common.TranslationUnit;
 import net.sf.okapi.tm.pensieve.common.TranslationUnitVariant;
 import net.sf.okapi.tm.pensieve.seeker.ITmSeeker;
+import net.sf.okapi.tm.pensieve.seeker.PensieveSeeker;
 import net.sf.okapi.tm.pensieve.seeker.TmSeekerFactory;
 import net.sf.okapi.tm.pensieve.writer.ITmWriter;
+import net.sf.okapi.tm.pensieve.writer.PensieveWriter;
 import net.sf.okapi.tm.pensieve.writer.TmWriterFactory;
 
 /**
@@ -63,7 +65,7 @@ public class RepetitionAnalysisStep extends BasePipelineStep {
 	private long tuCounter;	
 	private long groupCounter;	
 	private String tmDir;
-	private ITmWriter tmWriter;
+	private PensieveWriter tmWriter;
 	private ITmSeeker currentTm;
 	private LocaleId sourceLocale;
 	private LocaleId targetLocale;
@@ -137,11 +139,9 @@ public class RepetitionAnalysisStep extends BasePipelineStep {
 		tuCounter = 0;
 		groupCounter = 1;
 		
-		tmWriter = TmWriterFactory.createFileBasedTmWriter(tmDir, true);
-		tmWriter.close(); // To create a TM for the seeker
+		tmWriter = (PensieveWriter) TmWriterFactory.createFileBasedTmWriter(tmDir, true);
+		currentTm = new PensieveSeeker(tmWriter.getIndexWriter());
 		
-		tmWriter = TmWriterFactory.createFileBasedTmWriter(tmDir, true);
-		currentTm = TmSeekerFactory.createFileBasedTmSeeker(tmDir);
 		return super.handleStartDocument(event);
 	}
 	
@@ -256,10 +256,6 @@ public class RepetitionAnalysisStep extends BasePipelineStep {
 				// Should be called here after every segment addition to the TM for the situations 
 				// of repetitive segments within a tu
 				tmWriter.commit();
-				
-				// Need to reopen the TM, otherwise doesn't work
-				currentTm.close();
-				currentTm = TmSeekerFactory.createFileBasedTmSeeker(tmDir);
 			}
 			if (hasTranslationUnits) groupCounter++;
 		}

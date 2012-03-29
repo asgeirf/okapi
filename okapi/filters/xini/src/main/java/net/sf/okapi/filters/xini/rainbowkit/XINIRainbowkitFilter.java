@@ -18,7 +18,7 @@
   See also the full LGPL text here: http://www.gnu.org/copyleft/lesser.html
 ===========================================================================*/
 
-package net.sf.okapi.filters.xini;
+package net.sf.okapi.filters.xini.rainbowkit;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -27,7 +27,6 @@ import java.util.List;
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.IParameters;
 import net.sf.okapi.common.MimeTypeMapper;
-import net.sf.okapi.common.UsingParameters;
 import net.sf.okapi.common.encoder.EncoderManager;
 import net.sf.okapi.common.filters.FilterConfiguration;
 import net.sf.okapi.common.filters.IFilter;
@@ -37,16 +36,24 @@ import net.sf.okapi.common.resource.RawDocument;
 import net.sf.okapi.common.skeleton.GenericSkeletonWriter;
 import net.sf.okapi.common.skeleton.ISkeletonWriter;
 
-@UsingParameters(Parameters.class)
-public class XINIFilter implements IFilter {
-	private Parameters params;
+public class XINIRainbowkitFilter implements IFilter {
 	private EncoderManager encoderManager;
-	private XINIReader reader;
+	private XINIRainbowkitReader reader;
 	private LinkedList<Event> queue;
+	private String relDocName;
 	
-	public XINIFilter () {
-		params = new Parameters();
+	public XINIRainbowkitFilter () {
 		queue = new LinkedList<Event>();
+	}
+
+	/**
+	 * For TKit merging only!
+	 * 
+	 * @param relDocName The relative path if the original document. Used to extract only the pages related to this document.
+	 */
+	public XINIRainbowkitFilter(String relDocName) {
+		this();
+		this.relDocName = relDocName;
 	}
 
 	@Override
@@ -63,12 +70,12 @@ public class XINIFilter implements IFilter {
 
 	@Override
 	public String getName () {
-		return "okf_xini";
+		return "okf_rainbowkitxini";
 	}
 
 	@Override
 	public String getDisplayName () {
-		return "XINI Filter";
+		return "XINI RainbowKit Filter";
 	}
 
 	@Override
@@ -82,16 +89,9 @@ public class XINIFilter implements IFilter {
 		list.add(new FilterConfiguration(getName(),
 			MimeTypeMapper.XINI_MIME_TYPE,
 			getClass().getName(),
-			"XINI",
-			"Configuration for XINI documents from ONTRAM",
-			null,
-			".xini;"));
-		list.add(new FilterConfiguration(getName()+"-noOutputSegmentation",
-				MimeTypeMapper.XINI_MIME_TYPE,
-				getClass().getName(),
-				"XINI (no output segmentation)",
-				"Configuration for XINI documents from ONTRAM (fields in the output are not segmented)",
-				"noOutputSegmentation.fprm"));
+			"XINI (Rainbow T-Kit)",
+			"Configuration for XINI documents from ONTRAM T-Kits.",
+			null));
 		return list;
 	}
 
@@ -106,7 +106,7 @@ public class XINIFilter implements IFilter {
 
 	@Override
 	public IParameters getParameters () {
-		return params;
+		return null;
 	}
 
 	@Override
@@ -131,10 +131,10 @@ public class XINIFilter implements IFilter {
 		close();
 		
 		// get events
-		reader = new XINIReader(params);
+		reader = new XINIRainbowkitReader();
 		reader.open(input);
-		// XINI is an input file for the pipeline
-		queue.addAll(reader.getFilterEvents());
+		// Reading the T-Kit
+		queue.addAll(reader.getFilterEvents(relDocName));
 	}
 
 	@Override
@@ -143,7 +143,6 @@ public class XINIFilter implements IFilter {
 
 	@Override
 	public void setParameters (IParameters params) {
-		this.params = (Parameters)params;
 	}
 
 	public ISkeletonWriter createSkeletonWriter() {
@@ -151,7 +150,7 @@ public class XINIFilter implements IFilter {
 	}
 
 	public IFilterWriter createFilterWriter () {
-		return new XINIWriter(params);
+		return new XINIRainbowkitWriter();
 	}
 
 }

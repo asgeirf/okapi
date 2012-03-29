@@ -1,5 +1,5 @@
 /*===========================================================================
-  Copyright (C) 2011 by the Okapi Framework contributors
+  Copyright (C) 2011-2012 by the Okapi Framework contributors
 -----------------------------------------------------------------------------
   This library is free software; you can redistribute it and/or modify it 
   under the terms of the GNU Lesser General Public License as published by 
@@ -85,33 +85,39 @@ public class Tm implements ITm {
 	}
 	
 	@Override
-	public String getUUID() {
+	public String getUUID () {
 		return uuid;
 	}
 	
 	@Override
-	public String getName() {
+	public String getName () {
 		return name;
 	}
 
 	@Override
-	public String getDescription() {
+	public String getDescription () {
 		return store.getTmDescription(name);
 	}
 	
 	@Override
-	public List<String> getAvailableFields() {
+	public boolean getHasIndex () {
+		//TODO: implement index
+		return false;
+	}
+	
+	@Override
+	public List<String> getAvailableFields () {
 		return store.getAvailableFields(name);
 	}
 
 	@Override
-	public void rename(String newName) {
+	public void rename (String newName) {
 		store.renameTm(name, newName);
 		name = newName;
 	}
 
 	@Override
-	public void setRecordFields(List<String> names) {
+	public void setRecordFields (List<String> names) {
 		recordFields.clear();
 		recordFields.add(Repository.SEG_COL_SEGKEY);
 		recordFields.add(Repository.SEG_COL_FLAG);
@@ -119,14 +125,14 @@ public class Tm implements ITm {
 	}
 
 	@Override
-	public void startImport() {
+	public void startImport () {
 		existingTuFields = store.getTuFields(name);
 		existingSegFields = store.getSegFields(name);
 		existingLocales = store.getTmLocales(name);
 	}
 	
 	@Override
-	public void finishImport() {
+	public void finishImport () {
 		existingTuFields = null;
 		existingSegFields = null;
 		existingLocales = null;
@@ -201,7 +207,7 @@ public class Tm implements ITm {
 	 * @return null if no new fields
 	 */
 	@SuppressWarnings("unused")
-	private List<String> getNewTuFields(Map<String, Object> tuFields) {
+	private List<String> getNewTuFields (Map<String, Object> tuFields) {
 		if(tuFields != null){
 			List<String> availTuProps = store.getTuFields(name);
 			if(availTuProps.size()==0){
@@ -216,7 +222,7 @@ public class Tm implements ITm {
 	}
 	
 	
-	private void calculateAndUpdateTuFields(Map<String, Object> intputFields) {
+	private void calculateAndUpdateTuFields (Map<String, Object> intputFields) {
 		if(intputFields != null){
 			if(existingTuFields.size()==0){
 				updateTuFields(new ArrayList<String>(intputFields.keySet()));
@@ -232,7 +238,7 @@ public class Tm implements ITm {
 		}
 	}
 	
-	private void calculateAndUpdateSegFields(Map<String, Object> intputFields) {
+	private void calculateAndUpdateSegFields (Map<String, Object> intputFields) {
 		if(intputFields != null){
 			if(existingSegFields.size()==0){
 				updateSegFields(new ArrayList<String>(intputFields.keySet()));
@@ -248,7 +254,7 @@ public class Tm implements ITm {
 		}
 	}
 	
-	private int updateTMlocales() {
+	private int updateTMlocales () {
 		List<String> segFields = store.getSegFields(name);
 		
 		ArrayList<String> langs = new ArrayList<String>();
@@ -273,31 +279,31 @@ public class Tm implements ITm {
 	}
 	
 	@Override
-	public void setPageSize(long size) {
+	public void setPageSize (long size) {
 		if ( size < 3 ) this.limit = 3;
 		else this.limit = (int)size;
 		needPagingRefresh = true;
 	}
 	
 	@Override
-	public long getPageSize() {
+	public long getPageSize () {
 		return limit;
 	}
 
 	@Override
-	public void moveBeforeFirstPage() {
+	public void moveBeforeFirstPage () {
 		currentPage = -1;
 	}
 	
 	@Override
-	public IRecordSet getFirstPage() {
+	public IRecordSet getFirstPage () {
 		checkPagingVariables();
 		currentPage = 0;
 		return getPage();
 	}
 
 	@Override
-	public IRecordSet getLastPage() {	
+	public IRecordSet getLastPage () {	
 		checkPagingVariables();
 		currentPage = pageCount-1;
 		//int pageCount = calculatePageCount(); 
@@ -308,7 +314,7 @@ public class Tm implements ITm {
 	}
 
 	@Override
-	public IRecordSet getNextPage() {
+	public IRecordSet getNextPage () {
 		checkPagingVariables();
 		if ( currentPage >= pageCount-1 ) return null; // Last page reached
 		currentPage++;
@@ -320,7 +326,7 @@ public class Tm implements ITm {
 	}
 	
 	@Override
-	public IRecordSet getPreviousPage() {
+	public IRecordSet getPreviousPage () {
 		checkPagingVariables();
 		if ( currentPage <= 0 ) return null; // First page reached
 		currentPage--;
@@ -331,17 +337,17 @@ public class Tm implements ITm {
 	}
 
 	@Override
-	public List<String> getLocales() {
+	public List<String> getLocales () {
 		return store.getTmLocales(name);
 	}
 	
 	@Override
-	public long getCurrentPage() {
+	public long getCurrentPage () {
 		return currentPage;
 	}
 	
 	@Override
-	public long getPageCount() {
+	public long getPageCount () {
 		return pageCount;
 	}
 	
@@ -349,7 +355,7 @@ public class Tm implements ITm {
 	 * Return the ResultSet from the current page. Should all Close() to release the Mongo DBCursor.
 	 * @return
 	 */
-	private IRecordSet getPage(){
+	private IRecordSet getPage () {
 		DBCollection segColl = store.getDb().getCollection(name+"_SEG");
 		DBCursor cur;
 		if (pageMode == PageMode.EDITOR ) {
@@ -372,7 +378,7 @@ public class Tm implements ITm {
 	 * Calculate the total page count in the tm
 	 * @return pages
 	 */
-	public int calculatePageCount(){
+	public int calculatePageCount () {
 		DBCollection segColl = store.getDb().getCollection(name+"_SEG");
 
 		//TODO make it a long
@@ -389,7 +395,7 @@ public class Tm implements ITm {
 	 * Update the tuFields field
 	 * @param fields
 	 */
-	void updateTuFields (List<String> fields){
+	void updateTuFields (List<String> fields) {
         updateCommaSeparatedValues(fields, Repository.TM_COL_TU_FIELDS);
 	}
 	
@@ -397,7 +403,7 @@ public class Tm implements ITm {
 	 * Update the segFields field
 	 * @param fields
 	 */
-	void updateSegFields (List<String> fields){
+	void updateSegFields (List<String> fields) {
 		updateCommaSeparatedValues(fields, Repository.TM_COL_SEG_FIELDS);
 	}
 	
@@ -405,7 +411,7 @@ public class Tm implements ITm {
 	 * Update the locales field
 	 * @param fields
 	 */
-	void updateLocales (List<String> fields){
+	void updateLocales (List<String> fields) {
 		updateCommaSeparatedValues(fields, Repository.TM_COL_LOCALES);
 	}
 
@@ -413,7 +419,7 @@ public class Tm implements ITm {
 	 * Retrieve the specific TM entry
 	 * @return
 	 */
-	DBObject getTmEntry(){
+	DBObject getTmEntry () {
 		DBCollection tmList = store.getDb().getCollection(Repository.TM_COLL);
 		
 		BasicDBObject query = new BasicDBObject();
@@ -432,7 +438,7 @@ public class Tm implements ITm {
 	 * Retrieve the specific TM entry
 	 * @return
 	 */
-	private DBObject getTmAsQuery(){
+	private DBObject getTmAsQuery () {
 		BasicDBObject query = new BasicDBObject();
 	    query.put(Repository.TM_COL_NAME, name);
 	    return query;
@@ -444,7 +450,7 @@ public class Tm implements ITm {
 	 * @param values
 	 * @param columnName
 	 */
-	void updateCommaSeparatedValues (List<String> values, String columnName){
+	void updateCommaSeparatedValues (List<String> values, String columnName) {
 		DBCollection tmList = store.getDb().getCollection(Repository.TM_COLL);
 		
 		BasicDBObject query = new BasicDBObject();
@@ -463,7 +469,7 @@ public class Tm implements ITm {
 	 * @param items
 	 * @return
 	 */
-	private String buildCommaList(List<String> items){
+	private String buildCommaList(List<String> items) {
 		
 		StringBuilder sb = new StringBuilder();
 		int i = 0;
@@ -869,4 +875,5 @@ public class Tm implements ITm {
 		}		
 		return query;
 	}
+
 }

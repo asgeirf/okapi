@@ -62,11 +62,7 @@ public class EndPlaceHolder {
      *     
      */
     public PlaceHolderType getType() {
-        if (type == null) {
-            return PlaceHolderType.PH;
-        } else {
-            return type;
-        }
+        return type;
     }
 
     /**

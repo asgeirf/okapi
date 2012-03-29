@@ -225,7 +225,7 @@ public class ExtractionStep extends BasePipelineStep {
 		String tmpIn = inputURI.getPath();
 		String relativeInput = tmpIn.substring(inputRootDir.length()+1);
 		String tmpOut = outputURI.getPath();
-		String relativeOutput = tmpOut.substring(outputRootDir.length()+1);
+		String relativeOutput = tmpOut.substring(outputRootDir.length()+2);
 
 		IParameters prm = sd.getFilterParameters();
 		String paramsData = null;

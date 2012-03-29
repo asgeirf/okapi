@@ -213,7 +213,7 @@ public class PensieveSeekerTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void constructorNullIndexDir() {
-        new PensieveSeeker(null);
+        new PensieveSeeker((Directory) null);
     }    
 
     @Test

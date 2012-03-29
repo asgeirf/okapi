@@ -64,6 +64,12 @@ public interface ITm {
 	public String getDescription ();
 
 	/**
+	 * Gets whether or not this TM has an associated index for searching fuzzy matches.
+	 * @return true if this TM is indexed, false otherwise.
+	 */
+	public boolean getHasIndex ();
+	
+	/**
 	 * Gets a list of all available fields in this TM.
 	 * <p>Note that the segKey and Flag fields are not included in this list.
 	 * @return the list of all available fields in this TM.

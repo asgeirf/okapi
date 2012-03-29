@@ -1,6 +1,7 @@
-package net.sf.okapi.filters.xini;
+package net.sf.okapi.filters.xini.rainbowkit;
 
-import java.lang.reflect.Field;
+import static org.junit.Assert.assertTrue;
+
 import java.util.List;
 
 import junit.framework.Assert;
@@ -10,6 +11,7 @@ import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
 import net.sf.okapi.common.resource.TextUnit;
 import net.sf.okapi.filters.xini.jaxb.Element;
+import net.sf.okapi.filters.xini.jaxb.Field;
 import net.sf.okapi.filters.xini.jaxb.Seg;
 import net.sf.okapi.filters.xini.jaxb.TextContent;
 import net.sf.okapi.filters.xini.jaxb.Xini;
@@ -19,8 +21,10 @@ import org.junit.Test;
 
 public class FilterEventsToXiniTransformerTest {
 
-	private static final String TARGET_TEST_STRING = "Translated test String";
+	private static final String TARGET_TEST_STRING = "Übersetzter test String";
 	private static final String SOURCE_TEST_STRING = "test String";
+	private static final String NBSP_STRING = "\u00A0";
+	
 	private FilterEventToXiniTransformer transformer;
 	private TextUnit txtUnit1;
 	private Xini xini;
@@ -52,7 +56,7 @@ public class FilterEventsToXiniTransformerTest {
 	}
 
 	@Test
-	public void transformTextUnitTestTransCreation() {
+	public void exportsPreTranslations() {
 		transformer.transformTextUnit(txtUnit1);
 		Xini xini = getXiniFrom(transformer);
 
@@ -70,6 +74,31 @@ public class FilterEventsToXiniTransformerTest {
 		Assert.assertTrue(targetCont.getContent().contains(TARGET_TEST_STRING));
 
 		//writeOutForTest();
+	}
+	
+	@Test
+	public void exportsNonBreakingSpaceAsEmptyTranslation() {
+		this.setUpTextUnitWithNbspContent();
+		
+		transformer.transformTextUnit(txtUnit1);
+		
+		assertEmptyTranslationFlagSet();
+	}
+	
+	private void setUpTextUnitWithNbspContent() {
+		txtUnit1 = new TextUnit("TU1");
+
+		TextContainer textContainer = createTextContainer("1", NBSP_STRING);
+		txtUnit1.setId("1");
+		txtUnit1.setSource(textContainer);
+	}
+	
+	private void assertEmptyTranslationFlagSet() {
+		final Xini xini = getXiniFrom(transformer);
+		final Element firstElement = this.getFirstElementFromXini(xini);
+		Field field = firstElement.getElementContent().getFields().getField().get(0);
+		Seg seg = field.getSeg().get(0);
+		assertTrue(seg.isEmptyTranslation());
 	}
 
 	private List<Seg> getSegListFromFirstElement(Xini xini2) {
@@ -93,25 +122,20 @@ public class FilterEventsToXiniTransformerTest {
 
 	private Xini getXiniFrom(FilterEventToXiniTransformer transformer2) {
 		try {
-			Field xiniField = transformer.getClass().getDeclaredField("xini");
+			java.lang.reflect.Field xiniField = transformer.getClass().getDeclaredField("xini");
 			xiniField.setAccessible(true);
 
 			return xini = (Xini) xiniField.get(transformer);
 
 		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		} catch (NoSuchFieldException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
-		return null;
 	}
 
 }

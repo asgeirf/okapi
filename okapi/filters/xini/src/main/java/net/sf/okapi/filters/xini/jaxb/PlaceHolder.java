@@ -9,9 +9,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for PlaceHolder complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="PlaceHolder">
  *   &lt;complexContent>
@@ -24,8 +24,8 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PlaceHolder")
@@ -41,12 +41,12 @@ public class PlaceHolder
     protected String opening;
     @XmlAttribute
     protected String closing;
-    
-    
+
+
 
     /**
      * Gets the value of the id property.
-     * 
+     *
      */
     public int getID() {
         return id;
@@ -54,36 +54,32 @@ public class PlaceHolder
 
     /**
      * Sets the value of the id property.
-     * 
+     *
      */
     public void setID(int value) {
         this.id = value;
-     
+
     }
 
     /**
      * Gets the value of the type property.
-     * 
+     *
      * @return
      *     possible object is
      *     {@link PlaceHolderType }
-     *     
+     *
      */
     public PlaceHolderType getType() {
-        if (type == null) {
-            return PlaceHolderType.PH;
-        } else {
-            return type;
-        }
+        return type;
     }
 
     /**
      * Sets the value of the type property.
-     * 
+     *
      * @param value
      *     allowed object is
      *     {@link PlaceHolderType }
-     *     
+     *
      */
     public void setType(PlaceHolderType value) {
         this.type = value;
@@ -91,11 +87,11 @@ public class PlaceHolder
 
     /**
      * Gets the value of the opening property.
-     * 
+     *
      * @return
      *     possible object is
      *     {@link String }
-     *     
+     *
      */
     public String getOpening() {
         return opening;
@@ -103,11 +99,11 @@ public class PlaceHolder
 
     /**
      * Sets the value of the opening property.
-     * 
+     *
      * @param value
      *     allowed object is
      *     {@link String }
-     *     
+     *
      */
     public void setOpening(String value) {
         this.opening = value;
@@ -115,11 +111,11 @@ public class PlaceHolder
 
     /**
      * Gets the value of the closing property.
-     * 
+     *
      * @return
      *     possible object is
      *     {@link String }
-     *     
+     *
      */
     public String getClosing() {
         return closing;
@@ -127,11 +123,11 @@ public class PlaceHolder
 
     /**
      * Sets the value of the closing property.
-     * 
+     *
      * @param value
      *     allowed object is
      *     {@link String }
-     *     
+     *
      */
     public void setClosing(String value) {
         this.closing = value;

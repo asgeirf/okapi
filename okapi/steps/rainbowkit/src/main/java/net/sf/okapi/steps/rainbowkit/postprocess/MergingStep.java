@@ -97,15 +97,17 @@ public class MergingStep extends BasePipelineStep {
 		}
 		
 		// Create the merger (for each new manifest)
-		boolean alwaysForceTargetLocale = info.getExtractionType() == Manifest.EXTRACTIONTYPE_ONTRAM;
+		boolean alwaysForceTargetLocale = Manifest.EXTRACTIONTYPE_ONTRAM.equals(info.getExtractionType());
+		LocaleId targetLocaleToUse;
 		if ( params.getForceTargetLocale() || alwaysForceTargetLocale) {
-			merger = new Merger(manifest, fcMapper, params.getPreserveSegmentation(),
-				targetLocale, params.getReturnRawDocument());
+			targetLocaleToUse = targetLocale;
 		}
 		else {
-			merger = new Merger(manifest, fcMapper, params.getPreserveSegmentation(),
-				null, params.getReturnRawDocument());
+			targetLocaleToUse = null;
 		}
+		merger = new Merger(manifest, fcMapper, params.getPreserveSegmentation(),
+				targetLocaleToUse, params.getReturnRawDocument(), params.getOverrideOutputPath());
+		
 		// And trigger the merging
 		return merger.startMerging(info, event);
 	}

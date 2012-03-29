@@ -46,7 +46,7 @@ public class OIndexTest {
 		//dir = FSDirectory.open(new File("C:\\PENSIEVE")); 
 
 		tmWriter = new OWriter(dir, true);
-		tmSeeker = new OSeeker(dir);
+		tmSeeker = new OSeeker(tmWriter.getIndexWriter());
 		writer = tmWriter.getIndexWriter();
 	}
 	

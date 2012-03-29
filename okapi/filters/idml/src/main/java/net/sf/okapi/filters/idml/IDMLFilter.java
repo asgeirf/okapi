@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -82,8 +83,10 @@ public class IDMLFilter implements IFilter {
 	private final static String STORYTYPE = "story";
 	private final static String EMBEDDEDSTORIES = "embedded-stories";
 	private final static CodeSimplifier SIMPLIFIER = new CodeSimplifier();
+	private final DocumentBuilder docBuilder;
+
+	private final Logger logger = Logger.getLogger(getClass().getName());
 	
-	final private DocumentBuilder docBuilder;
 	private URI docURI;
 	private LinkedList<Event> queue;
 	private LocaleId srcLoc;
@@ -364,7 +367,7 @@ public class IDMLFilter implements IFilter {
 			}
 		}
 		catch ( Throwable e ) {
-			throw new OkapiIOException("Error while gathering stories.", e);
+			throw new OkapiIOException("Error while gathering stories.\n"+e.getMessage(), e);
 		}
 	}
 
@@ -376,6 +379,13 @@ public class IDMLFilter implements IFilter {
 	private int gatherStoriesInSpread (ZipEntry entry)
 		throws SAXException, IOException, ParserConfigurationException
 	{
+		// Skip large spreads if needed
+		if ( entry.getSize() > params.getSkipThreshold()*1024 ) {
+			logger.warning(String.format("The spread '%s' is larger than the defined threshold (%d Kb). It will be skipped.",
+				entry.getName(), params.getSkipThreshold()));
+			return 0;
+		}
+		
 		ArrayList<String> storyList = new ArrayList<String>();
 		Document doc = docBuilder.parse(zipFile.getInputStream(entry));
 
