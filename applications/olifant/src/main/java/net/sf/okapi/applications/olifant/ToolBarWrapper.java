@@ -66,6 +66,7 @@ class ToolBarWrapper {
 		stSource.setText("Source:");
 		cbSource = new Combo(comp, SWT.READ_ONLY | SWT.BORDER);
 		GridData gdTmp = new GridData(GridData.FILL_HORIZONTAL);
+		gdTmp.widthHint = 80;
 		cbSource.setLayoutData(gdTmp);
 		cbSource.addSelectionListener(new SelectionListener() {
 			@Override
@@ -82,6 +83,7 @@ class ToolBarWrapper {
 		stTarget.setText("Target:");
 		cbTarget = new Combo(comp, SWT.READ_ONLY | SWT.BORDER);
 		gdTmp = new GridData(GridData.FILL_HORIZONTAL);
+		gdTmp.widthHint = 80;
 		cbTarget.setLayoutData(gdTmp);
 		cbTarget.addSelectionListener(new SelectionListener() {
 			@Override

@@ -22,6 +22,10 @@ package net.sf.okapi.lib.tmdb;
 
 /**
  * provides an implementation-agnostic access to a set of entries for the Olifant TM.
+ * <p>The fields in each row are numbered starting at 1.
+ * The first field is always the segKey field
+ * The second field is always the flag field
+ * The requested fields come after those two first fields.
  */
 public interface IRecordSet {
 

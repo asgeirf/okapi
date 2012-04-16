@@ -4,8 +4,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
+import net.sf.okapi.common.ClassUtil;
 import net.sf.okapi.common.Event;
 import net.sf.okapi.common.EventType;
 import net.sf.okapi.common.LocaleId;
@@ -15,6 +17,14 @@ import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
 import net.sf.okapi.common.resource.TextPart;
 import net.sf.okapi.common.resource.TextUnit;
+import net.sf.okapi.filters.xml.XMLFilter;
+import net.sf.okapi.lib.extra.pipelinebuilder.XBatch;
+import net.sf.okapi.lib.extra.pipelinebuilder.XBatchItem;
+import net.sf.okapi.lib.extra.pipelinebuilder.XParameter;
+import net.sf.okapi.lib.extra.pipelinebuilder.XPipeline;
+import net.sf.okapi.lib.extra.pipelinebuilder.XPipelineStep;
+import net.sf.okapi.lib.extra.steps.EventLogger;
+import net.sf.okapi.steps.common.RawDocumentToFilterEventsStep;
 import net.sf.okapi.steps.segmentation.Parameters.SegmStrategy;
 
 import org.junit.Before;
@@ -151,4 +161,25 @@ public class SegmentationStepTest {
 		assertEquals(" ", source.get(2).toString());
 		assertFalse(source.get(2).isSegment());
 	}
+	
+	@Test
+	public void testEvents() throws URISyntaxException, MalformedURLException {
+		new XPipeline(
+				"Test pipeline for CodeSimplifierStep",
+				new XBatch(
+						new XBatchItem(
+								this.getClass().getResource("/test.xml").toURI(),
+								"UTF-8",
+								LocaleId.ENGLISH)
+						),
+						
+				new RawDocumentToFilterEventsStep(new XMLFilter()),
+				new XPipelineStep(
+						new SegmentationStep(),
+						new XParameter("sourceSrxPath",
+								ClassUtil.getResourcePath(getClass(), "/Segmentation.srx"))),
+				new EventLogger()
+		).execute();
+	}
+
 }

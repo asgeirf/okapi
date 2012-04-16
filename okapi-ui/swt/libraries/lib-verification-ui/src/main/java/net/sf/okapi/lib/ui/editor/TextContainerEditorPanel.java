@@ -1,5 +1,5 @@
 /*===========================================================================
-  Copyright (C) 2010 by the Okapi Framework contributors
+  Copyright (C) 2010-2012 by the Okapi Framework contributors
 -----------------------------------------------------------------------------
   This library is free software; you can redistribute it and/or modify it 
   under the terms of the GNU Lesser General Public License as published by 
@@ -54,8 +54,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.layout.GridData;
@@ -285,14 +283,8 @@ public class TextContainerEditorPanel {
 		edit.setKeyBinding(SWT.SHIFT|SWT.INSERT, SWT.NULL);
 		
 		// Create a copy of the default text field options for the source
-		textOptions = new TextOptions(parent.getDisplay(), edit);
-		Font tmp = textOptions.font;
-		// Make the font a bit larger by default
-		FontData[] fontData = tmp.getFontData();
-		fontData[0].setHeight(fontData[0].getHeight()+3);
-		textOptions.font = new Font(parent.getDisplay(), fontData[0]);
-
-		applyTextOptions(textOptions);
+		textOptions = new TextOptions(parent.getDisplay(), edit, 3);
+		textOptions.applyTo(edit);
 	}
 	
 	@Override
@@ -334,12 +326,12 @@ public class TextContainerEditorPanel {
 		edit.setCaretOffset(pt.x+text.length());
 	}
 	
-	public void applyTextOptions (TextOptions textOptions) {
-		edit.setBackground(textOptions.background);
-		edit.setForeground(textOptions.foreground);
-		edit.setFont(textOptions.font);
-		edit.setOrientation(textOptions.isBidirectional ? SWT.RIGHT_TO_LEFT : SWT.LEFT_TO_RIGHT);
-	}
+//	public void applyTextOptions (TextOptions textOptions) {
+//		edit.setBackground(textOptions.background);
+//		edit.setForeground(textOptions.foreground);
+//		edit.setFont(textOptions.font);
+//		edit.setOrientation(textOptions.isBidirectional ? SWT.RIGHT_TO_LEFT : SWT.LEFT_TO_RIGHT);
+//	}
 	
 	private void createContextMenu () {
 		contextMenu = new Menu(edit.getShell(), SWT.POP_UP);
@@ -1221,7 +1213,7 @@ public class TextContainerEditorPanel {
 			markStyle = dlg.getMarkStyle();
 			
 			// Re set the styles
-			applyTextOptions(textOptions);
+			textOptions.applyTo(edit);
 			refresh();
 			
 			// Dispose only after redrawing

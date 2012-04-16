@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>build-okapi</artifactId>
 		<groupId>net.sf.okapi</groupId>
-		<version>0.16-SNAPSHOT</version>
+		<version>0.17-SNAPSHOT</version>
 		<relativePath>../../okapi/pom.xml</relativePath>
 	</parent>
 

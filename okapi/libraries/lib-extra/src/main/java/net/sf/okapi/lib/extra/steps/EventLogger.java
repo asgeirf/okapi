@@ -54,7 +54,8 @@ public class EventLogger extends BasePipelineStep {
 		
 		switch ( event.getEventType() ) {	
 			case TEXT_UNIT:
-				res = "  " + event.getResource().getId();
+				//res = "  " + event.getResource().getId();
+				res = String.format("  [%s]", event.getResource().getId());
 				break;
 			case START_DOCUMENT:
 				res +=  "  " + ((StartDocument) event.getResource()).getName();
@@ -103,8 +104,8 @@ public class EventLogger extends BasePipelineStep {
 			increasing = false;
 			printEvent(event);
 			if (event.getEventType() == EventType.END_BATCH) {
-				logger.setLevel(Level.FINE);
-				logger.fine(sb.toString());
+				logger.setLevel(Level.INFO);
+				logger.info(sb.toString());
 			}
 			break;		
 			

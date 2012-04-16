@@ -22,31 +22,30 @@ package net.sf.okapi.lib.tmdb.h2;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
-import org.apache.lucene.document.Field.Index;
-import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 
-import net.sf.okapi.common.resource.TextFragment;
 import net.sf.okapi.lib.tmdb.IIndexAccess;
-import net.sf.okapi.lib.tmdb.lucene.OField;
-import net.sf.okapi.lib.tmdb.lucene.OFields;
-import net.sf.okapi.lib.tmdb.lucene.OSeeker;
-import net.sf.okapi.lib.tmdb.lucene.OTmHit;
-import net.sf.okapi.lib.tmdb.lucene.OWriter;
+import net.sf.okapi.lib.tmdb.lucene.Seeker;
+import net.sf.okapi.lib.tmdb.lucene.TmEntry;
+import net.sf.okapi.lib.tmdb.lucene.TmHit;
+import net.sf.okapi.lib.tmdb.lucene.Writer;
 
 class IndexAccess implements IIndexAccess {
 
-	private OWriter writer;
-	private OSeeker seeker;
+	private Writer writer;
+	private Seeker seeker;
 	private boolean inMemory;
-	private List<OTmHit> hits;
+	private List<TmHit> hits;
+	private Repository store;
 	
 	public IndexAccess (Repository store) {
 		try {
+			this.store = store;
 			Directory idxDir = null;
 			// Get the location from the repository instance
 			String dir = store.getDirectory();
@@ -62,8 +61,8 @@ class IndexAccess implements IIndexAccess {
 				idxDir = FSDirectory.open(file);
 			}
 			
-			writer = new OWriter(idxDir, false);
-			seeker = new OSeeker(writer.getIndexWriter());
+			writer = new Writer(idxDir, false);
+			seeker = new Seeker(writer.getIndexWriter());
 		}
 		catch (IOException e) {
 			throw new RuntimeException("Error creating the index access object:\n"+e.getMessage(), e);
@@ -78,37 +77,44 @@ class IndexAccess implements IIndexAccess {
 
 	@Override
 	public int search (String codedText,
-		int threshold,
+		String codesAsString,
+		String tmUUID,
+		String locale,
 		int maxHits,
-		String tmUUID)
+		int threshold,
+		HashMap<String, String> attributes)
 	{
-		OFields searchFields = new OFields();
-	    searchFields.put("tm", new OField("tm", tmUUID, Index.NO, Store.NO));
-		
-		hits = seeker.searchFuzzy(new TextFragment(codedText), threshold, maxHits, searchFields, "EN");
+		hits = seeker.searchFuzzy(codedText, codesAsString, tmUUID, locale, maxHits, threshold, attributes);
 		return hits.size();
 	}
 
 	@Override
-	public List<OTmHit> getHits () {
+	public List<TmHit> getHits () {
 		return hits;
 	}
 
 	@Override
 	public void close () {
-		if ( writer != null ) {
-			writer.close();
-			writer = null;
-		}
 		if ( seeker != null ) {
 			seeker.close();
 			seeker = null;
 		}
+		if ( writer != null ) {
+			writer.close();
+			writer = null;
+		}
 	}
 
 	@Override
-	public OWriter getWriter () {
+	public Writer getWriter () {
 		return writer;
+	}
+
+	@Override
+	public void deleteTMIndex (String uuid) {
+		writer.delete(TmEntry.TMID_FIELDNAME, uuid);
+		// Now: update the index information in the TM database
+		store.updateIndexInfo(uuid, null);
 	}
 
 }

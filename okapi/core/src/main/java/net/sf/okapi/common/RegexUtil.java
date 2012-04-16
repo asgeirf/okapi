@@ -53,17 +53,18 @@ public class RegexUtil {
 	    Matcher matcher = pattern.matcher(string);
 	    
 	    // Replace all occurrences of pattern in input
-	    StringBuffer buf = new StringBuffer();
+	    StringBuilder buf = new StringBuilder();
 	    
 	    int start = 0;
 	    int end = 0;
 	    
-	    while (matcher.find()) {
-	    
+	    while (matcher.find()) {	    
 	        start = matcher.start(group);
-	        buf.append(string.substring(end, start));
-	        buf.append(replacement);
-	        end = matcher.end(group);
+	        if (start != -1) { // The group might not present in the match
+	        	buf.append(string.substring(end, start));
+		        buf.append(replacement);
+		        end = matcher.end(group);
+	        }	        
 	    }
 	    
 	    buf.append(string.substring(end));

@@ -71,6 +71,7 @@ public class GroupsAndOptionsDialog {
 	private Button chkOneSegmentIncludesAll;
 	private Button chkTrimLeadingWS;
 	private Button chkTrimTrailingWS;
+	private Button chkUseJavaRegex;
 	private ClosePanel pnlActions;
 	private IHelp help;
 	private Text edHeaderComments;
@@ -96,30 +97,43 @@ public class GroupsAndOptionsDialog {
 		GridLayout layTmp = new GridLayout(2, false);
 		grpTmp.setLayout(layTmp);
 
-		chkSegmentSubFlows = new Button(grpTmp, SWT.CHECK);
-		chkSegmentSubFlows.setText(Res.getString("options.segmentSubFlow")); //$NON-NLS-1$
+		chkCascade = new Button(grpTmp, SWT.CHECK);
+		chkCascade.setText(Res.getString("options.cascade")); //$NON-NLS-1$
 		
 		chkIncludeOpeningCodes = new Button(grpTmp, SWT.CHECK);
 		chkIncludeOpeningCodes.setText(Res.getString("options.includeStartCodes")); //$NON-NLS-1$
 		
-		chkCascade = new Button(grpTmp, SWT.CHECK);
-		chkCascade.setText(Res.getString("options.cascade")); //$NON-NLS-1$
+		chkSegmentSubFlows = new Button(grpTmp, SWT.CHECK);
+		chkSegmentSubFlows.setText(Res.getString("options.segmentSubFlow")); //$NON-NLS-1$
 		
 		chkIncludeClosingCodes = new Button(grpTmp, SWT.CHECK);
 		chkIncludeClosingCodes.setText(Res.getString("options.includeEndCodes")); //$NON-NLS-1$
 
-		chkTrimLeadingWS = new Button(grpTmp, SWT.CHECK);
-		chkTrimLeadingWS.setText(Res.getString("options.trimLeadingWS")); //$NON-NLS-1$
+		new Label(grpTmp, SWT.NONE);
 		
 		chkIncludeIsolatedCodes = new Button(grpTmp, SWT.CHECK);
 		chkIncludeIsolatedCodes.setText(Res.getString("options.includeIsolatedCodes")); //$NON-NLS-1$
 		
-		chkTrimTrailingWS = new Button(grpTmp, SWT.CHECK);
-		chkTrimTrailingWS.setText(Res.getString("options.trimtrailingWS")); //$NON-NLS-1$
+		grpTmp = new Group(shell, SWT.NONE);
+		grpTmp.setText(Res.getString("options.grpExtensions")); //$NON-NLS-1$
+		gdTmp = new GridData(GridData.FILL_HORIZONTAL);
+		gdTmp.horizontalSpan = 2;
+		grpTmp.setLayoutData(gdTmp);
+		layTmp = new GridLayout(2, false);
+		grpTmp.setLayout(layTmp);
+
+		chkUseJavaRegex = new Button(grpTmp, SWT.CHECK);
+		chkUseJavaRegex.setText(Res.getString("options.useJavaRegex")); //$NON-NLS-1$
+		
+		chkTrimLeadingWS = new Button(grpTmp, SWT.CHECK);
+		chkTrimLeadingWS.setText(Res.getString("options.trimLeadingWS")); //$NON-NLS-1$
 		
 		chkOneSegmentIncludesAll = new Button(grpTmp, SWT.CHECK);
 		chkOneSegmentIncludesAll.setText(Res.getString("options.includeAllInOne")); //$NON-NLS-1$
 
+		chkTrimTrailingWS = new Button(grpTmp, SWT.CHECK);
+		chkTrimTrailingWS.setText(Res.getString("options.trimtrailingWS")); //$NON-NLS-1$
+		
 		Label label = new Label(grpTmp, SWT.NONE);
 		label.setText(Res.getString("GroupsAndOptionsDialog.headerComments")); //$NON-NLS-1$
 		gdTmp = new GridData(GridData.FILL_HORIZONTAL);
@@ -348,6 +362,7 @@ public class GroupsAndOptionsDialog {
 		chkOneSegmentIncludesAll.setSelection(srxDoc.oneSegmentIncludesAll());
 		chkTrimLeadingWS.setSelection(srxDoc.trimLeadingWhitespaces());
 		chkTrimTrailingWS.setSelection(srxDoc.trimTrailingWhitespaces());
+		chkUseJavaRegex.setSelection(srxDoc.useJavaRegex());
 		String tmp = srxDoc.getHeaderComments();
 		edHeaderComments.setText(tmp==null ? "" : tmp); //$NON-NLS-1$
 		tmp = srxDoc.getComments();
@@ -363,6 +378,7 @@ public class GroupsAndOptionsDialog {
 		srxDoc.setOneSegmentIncludesAll(chkOneSegmentIncludesAll.getSelection());
 		srxDoc.setTrimLeadingWhitespaces(chkTrimLeadingWS.getSelection());
 		srxDoc.setTrimTrailingWhitespaces(chkTrimTrailingWS.getSelection());
+		srxDoc.setUseJavaRegex(chkUseJavaRegex.getSelection());
 		String tmp = edHeaderComments.getText();
 		srxDoc.setHeaderComments(tmp.replace("\r\n", "\n")); //$NON-NLS-1$ //$NON-NLS-2$
 		tmp = edDocComments.getText();

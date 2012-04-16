@@ -1,5 +1,5 @@
 /*===========================================================================
-  Copyright (C) 2008-2010 by the Okapi Framework contributors
+  Copyright (C) 2008-2012 by the Okapi Framework contributors
 -----------------------------------------------------------------------------
   This library is free software; you can redistribute it and/or modify it 
   under the terms of the GNU Lesser General Public License as published by 
@@ -47,6 +47,7 @@ public class SRXSegmenter implements ISegmenter {
 	private boolean oneSegmentIncludesAll; // Extension
 	private boolean trimLeadingWS; // Extension
 	private boolean trimTrailingWS; // Extension
+	private boolean useJavaRegex; // Extension
 	private boolean trimCodes; // Extension
 	private ArrayList<CompiledRule> rules;
 	private Pattern maskRule; // Extension
@@ -81,6 +82,7 @@ public class SRXSegmenter implements ISegmenter {
 		oneSegmentIncludesAll = false; // Extension
 		trimLeadingWS = false; // Extension IN TEST (was true for StringInfo)
 		trimTrailingWS = false; // Extension IN TEST (was true for StringInfo)
+		useJavaRegex = false; // Extension
 		trimCodes = false; // Extension IN TEST (was false for StringInfo) NOT USED for now
 		icuRegex.reset();
 	}
@@ -97,6 +99,7 @@ public class SRXSegmenter implements ISegmenter {
 	 * @param oneSegmentIncludesAll true to include everything in segments that are alone.
 	 * @param trimLeadingWS true to trim leading white-spaces from the segments, false to keep them.
 	 * @param trimTrailingWS true to trim trailing white-spaces from the segments, false to keep them.
+	 * @param useJavaRegex true if the rules are for the Java regula expression engine, false if they are for ICU. 
 	 */
 	public void setOptions (boolean segmentSubFlows,
 		boolean includeStartCodes,
@@ -104,7 +107,8 @@ public class SRXSegmenter implements ISegmenter {
 		boolean includeIsolatedCodes,
 		boolean oneSegmentIncludesAll,
 		boolean trimLeadingWS,
-		boolean trimTrailingWS)
+		boolean trimTrailingWS,
+		boolean useJavaRegex)
 	{
 		this.segmentSubFlows = segmentSubFlows;
 		this.includeStartCodes = includeStartCodes;
@@ -113,6 +117,7 @@ public class SRXSegmenter implements ISegmenter {
 		this.oneSegmentIncludesAll = oneSegmentIncludesAll;
 		this.trimLeadingWS = trimLeadingWS;
 		this.trimTrailingWS = trimTrailingWS;
+		this.useJavaRegex = useJavaRegex;
 	}
 	
 	/**
@@ -156,6 +161,22 @@ public class SRXSegmenter implements ISegmenter {
 	 */
 	public boolean trimTrailingWhitespaces () {
 		return trimTrailingWS;
+	}
+	
+	/**
+	 * Indicates if this document has rules that are defined for the Java regular expression engine (vs ICU).
+	 * @return true if the rules are for the Java regular expression engine, false if they are for ICU.
+	 */
+	public boolean useJavaRegex () {
+		return useJavaRegex;
+	}
+	
+	/**
+	 * Sets the indicator that tells if this document has rules that are defined for the Java regular expression engine (vs ICU).
+	 * @param useJavaRegex true if the rules should be treated as Java regular expression, false for ICU.
+	 */
+	public void setUseJavaRegex (boolean useJavaRegex) {
+		this.useJavaRegex = useJavaRegex;
 	}
 	
 	/**
@@ -209,7 +230,7 @@ public class SRXSegmenter implements ISegmenter {
 		// Build the list of split positions
 		// Get the coded text for the whole content
 		String codedText = container.getCodedText();
-		icuRegex.processText(codedText, rules);
+		if (!useJavaRegex) icuRegex.processText(codedText, rules);
 
 		splits = new TreeMap<Integer, Boolean>();
 		Matcher m;
@@ -223,14 +244,15 @@ public class SRXSegmenter implements ISegmenter {
 				// Already a match: Per SRX algorithm, we use the first one only
 				// see http://www.gala-global.org/oscarStandards/srx/srx20.html#Struct_classdefinitions
 				if ( splits.containsKey(n) ) continue;
-				if (!icuRegex.verifyPos(n, rule, m)) continue;
+				if (!useJavaRegex && !icuRegex.verifyPos(n, rule, m)) continue;
 				
 				// Else add a split marker
 				splits.put(n, rule.isBreak);
 			}
 		}
 		
-		codedText = container.getCodedText(); // restore codedText after word breaks
+		if (!useJavaRegex) 
+			codedText = container.getCodedText(); // restore codedText after word breaks
 		
 		// Set the additional split positions for mask-rules
 		if ( maskRule != null ) {

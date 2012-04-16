@@ -22,24 +22,25 @@ package net.sf.okapi.filters.table.csv;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import net.sf.okapi.common.ListUtil;
 import net.sf.okapi.common.RegexUtil;
-import net.sf.okapi.common.StringUtil;
 import net.sf.okapi.common.Util;
 import net.sf.okapi.common.resource.Code;
 import net.sf.okapi.common.resource.DocumentPart;
+import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.Property;
 import net.sf.okapi.common.resource.TextContainer;
 import net.sf.okapi.common.resource.TextFragment;
-import net.sf.okapi.common.resource.ITextUnit;
-import net.sf.okapi.common.resource.TextUnitUtil;
 import net.sf.okapi.common.resource.TextFragment.TagType;
+import net.sf.okapi.common.resource.TextUnitUtil;
 import net.sf.okapi.common.skeleton.GenericSkeleton;
 import net.sf.okapi.common.skeleton.GenericSkeletonPart;
 import net.sf.okapi.common.skeleton.ISkeletonWriter;
 import net.sf.okapi.filters.table.base.BaseTableFilter;
 import net.sf.okapi.lib.extra.filters.TextProcessingResult;
+import net.sf.okapi.lib.extra.filters.WrapMode;
 
 /**
  * Comma-Separated Values filter. Extracts text from a comma-separated values table, 
@@ -57,12 +58,14 @@ public class CommaSeparatedValuesFilter  extends BaseTableFilter {
 	private static String MERGE_END_TAG		= "\ue10b";
 	private static String LINE_BREAK_TAG	= "\ue10c";
 	private static String LINE_WRAP_TAG		= "\ue10d";
+	private static String ESCAPED_QUALIFIER	= "\ue10e";
 
 ////	Debug
 //	private static String MERGE_START_TAG	= "_start_";
 //	private static String MERGE_END_TAG		= "_end_";
 //	private static String LINE_BREAK_TAG	= "_line_";
 //	private static String LINE_WRAP_TAG		= "_wrap_";
+//	private static String ESCAPED_QUALIFIER	= "_qualif_";
 	
 	private Parameters params; // CSV Filter parameters
 	private List<String> buffer;
@@ -72,6 +75,7 @@ public class CommaSeparatedValuesFilter  extends BaseTableFilter {
 	@SuppressWarnings("unused")
 	private int qualifierLen;
 	private boolean lineStopped;
+	private Pattern escapedQualifierPattern;
 	//private boolean allowNesting = false;
 	
 	public CommaSeparatedValuesFilter() {
@@ -103,6 +107,25 @@ public class CommaSeparatedValuesFilter  extends BaseTableFilter {
 		
 		params = getParameters(Parameters.class);	// Throws OkapiBadFilterParametersException
 		qualifierLen = Util.getLength(params.textQualifier);
+		
+		switch (params.escapingMode) {
+		case Parameters.ESCAPING_MODE_DUPLICATION:
+			// "((\\\"\\\")+)[^\\\"]|[^\\\"]((\\\"\\\")+)"
+//			escapedQualifierPattern =
+//					Pattern.compile(String.format("((\\%s\\%s)+)[^\\%s]|[^\\%s]((\\%s\\%s)+)",
+//							params.textQualifier, params.textQualifier, params.textQualifier,
+//							params.textQualifier, params.textQualifier, params.textQualifier));
+			escapedQualifierPattern =
+				Pattern.compile(String.format("((%s%s)+)[^%s]|[^%s]((%s%s)+)",
+					params.textQualifier, params.textQualifier, params.textQualifier,
+					params.textQualifier, params.textQualifier, params.textQualifier));
+			break;
+			
+		case Parameters.ESCAPING_MODE_BACKSLASH:
+			escapedQualifierPattern =
+				Pattern.compile(String.format("(\\\\%s)", params.textQualifier));
+			break;
+		}		
 		
 		super.component_init();
 		
@@ -163,11 +186,22 @@ public class CommaSeparatedValuesFilter  extends BaseTableFilter {
 					numTrailingQ = 0;
 				}					
 			}
-			else {
-				int numQ = StringUtil.getNumOccurrences(trimmedChunk, params.textQualifier);
-				numLeadingQ = RegexUtil.countLeadingQualifiers(trimmedChunk, params.textQualifier);
-				numTrailingQ = RegexUtil.countTrailingQualifiers(trimmedChunk, params.textQualifier);
-				int numUndetectedQ = numQ - (numLeadingQ + numTrailingQ); 
+			else 
+			{
+				// Replace escaped qualifiers (duplicated qualifier) with 
+				//trimmedChunk = trimmedChunk.replaceAll(params.textQualifier + params.textQualifier, ESCAPED_QUALIFIER);				
+				trimmedChunk = RegexUtil.replaceAll(trimmedChunk, 
+						escapedQualifierPattern, 1, ESCAPED_QUALIFIER);
+				trimmedChunk = RegexUtil.replaceAll(trimmedChunk, 
+						escapedQualifierPattern, 3, ESCAPED_QUALIFIER);
+//				int numQ = StringUtil.getNumOccurrences(trimmedChunk, params.textQualifier);
+//				numLeadingQ = RegexUtil.countLeadingQualifiers(trimmedChunk, params.textQualifier);
+//				numTrailingQ = RegexUtil.countTrailingQualifiers(trimmedChunk, params.textQualifier);
+//				int numUndetectedQ = numQ - (numLeadingQ + numTrailingQ);
+				
+				numLeadingQ = trimmedChunk.startsWith(params.textQualifier) ? 1 : 0;  
+				numTrailingQ = trimmedChunk.endsWith(params.textQualifier) ? 1 : 0;
+				//int numUndetectedQ = numQ % 2; 
 		
 				// Nested qualified fragments are allowed only within a line; when a new line is started to be analyzed, no nesting is 
 				// allowed, and an attempt to increase the level causes canceling of merging.				
@@ -177,11 +211,11 @@ public class CommaSeparatedValuesFilter  extends BaseTableFilter {
 ////				if (merging && level > 0 && startsQualified)
 //					cancelMerging();
 				
-				if (numUndetectedQ > 0)					
-					if (merging) 
-						numTrailingQ += numUndetectedQ;
-					else
-						numLeadingQ += numUndetectedQ;
+//				if (numUndetectedQ > 0)					
+//					if (merging) 
+//						numTrailingQ += numUndetectedQ;
+//					else
+//						numLeadingQ += numUndetectedQ;
 			}
 						
 			if (level > 0) {
@@ -267,14 +301,17 @@ public class CommaSeparatedValuesFilter  extends BaseTableFilter {
 		if (params.removeQualifiers) {			
 			String st = src.getCodedText();		
 			//String qq = params.textQualifier + params.textQualifier;
-			String qq = params.textQualifier;
+			String qq = params.escapingMode == Parameters.ESCAPING_MODE_BACKSLASH ?
+					"\\" + params.textQualifier : params.textQualifier;
+			
+			int qqLen = qq.length();
 			
 			int start = 0; // abs index
 			do {			
 				int index = st.indexOf(qq); // rel index
 				if (index == -1) break;
 				
-				src.changeToCode(start + index, start + index + 1, TagType.PLACEHOLDER, "CSV text qualifier"); // Quotation mark in the text goes to skeleton
+				src.changeToCode(start + index, start + index + qqLen, TagType.PLACEHOLDER, "CSV text qualifier"); // Quotation mark in the text goes to skeleton
 				
 				start += index + 2; // Code takes 2 positions			
 				st = src.getCodedText().substring(start); // To make sure we're synchronized
@@ -372,15 +409,24 @@ public class CommaSeparatedValuesFilter  extends BaseTableFilter {
 				if (!Util.checkIndex(index + 1, buf)) break;
 		
 				String mergedChunk = ListUtil.listAsString(buf.subList(index - 1, index + 2), "");
-				buf.subList(index, index + 2).clear();
 				
+				if (params.wrapMode == WrapMode.SPACES) {
+					mergedChunk = mergedChunk.replace(LINE_WRAP_TAG, " ");
+				}
+				else { 
+					// All other cases -- restore linebreaks (we can insert codes only for real line 
+					// breaks in-between records, not for wrapped lines inside the records)
+					// TODO Explain in wiki and javadocs
+					mergedChunk = mergedChunk.replace(LINE_WRAP_TAG, "\n");
+				}
+				
+				buf.subList(index, index + 2).clear();				
 				buf.set(index - 1, mergedChunk);
 			}
 			
 			String mergedChunk = ListUtil.listAsString(buf, params.fieldDelimiter);
 			
-			buffer.subList(start + 1, end + 1).clear();
-			
+			buffer.subList(start + 1, end + 1).clear();			
 			buffer.set(start, mergedChunk);			
 
 		}
@@ -462,12 +508,27 @@ public class CommaSeparatedValuesFilter  extends BaseTableFilter {
 				parts.add(0, new GenericSkeletonPart(getLineBreak()));
 			}
 		}
-		
-		
 	}
 
 	@Override
 	public ISkeletonWriter createSkeletonWriter() {
 		return new CSVSkeletonWriter();
+	}
+	
+	@Override
+	protected boolean checkTU(ITextUnit textUnit) {
+		return !isEmpty(textUnit);
+	}
+	
+	@Override
+	protected boolean isEmpty(ITextUnit textUnit) {
+		if (textUnit == null) return true;
+		
+		TextContainer source = textUnit.getSource();
+		Property prop = textUnit.getProperty(PROP_QUALIFIED);
+		boolean isQualified = prop != null && "yes".equals(prop.getValue());
+		if (source.isEmpty() && !isQualified) return true;
+		
+		return super.isEmpty(textUnit); // Always false in superclass
 	}
 }

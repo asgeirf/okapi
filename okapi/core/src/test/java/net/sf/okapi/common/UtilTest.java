@@ -365,6 +365,7 @@ public class UtilTest {
 		assertEquals("/C:/dir1/dir2/dir3/dir4/filename.ext", Util.fixPath("/C:/dir1/dir2//\\\\\\\\\\dir3/dir4/filename.ext"));
 		assertEquals("/C:/dir1/dir2/dir3/dir4/filename.ext", Util.fixPath("/C:/dir1/dir2/dir3/dir4/\\filename.ext"));
 		assertEquals("/C:/dir1/dir2/dir3/dir4/filename.ext", Util.fixPath("/C:/dir1//dir2/\\//\\\\dir3/dir4/filename.ext"));
+		assertEquals("/C:/dir1/dir2/dir3/dir4/filename.ext", Util.fixPath("/C:/dir1//dir2\\/\\\\/\\//\\\\dir3/dir4/filename.ext"));
 	}
 	
 // Unused

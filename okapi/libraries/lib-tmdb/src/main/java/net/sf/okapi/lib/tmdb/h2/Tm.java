@@ -50,6 +50,7 @@ public class Tm implements ITm {
 	private String tuTable;
 	private PreparedStatement pstmGet;
 	private List<String> recordFields;
+	private ArrayList<String> codesFields;
 	
 	private DbUtil.PageMode pageMode = PageMode.EDITOR;
 	private long limit = 500;
@@ -230,6 +231,17 @@ public class Tm implements ITm {
 	}
 
 	@Override
+	public String getIndexInfo () {
+		String res[] = store.getTmData(uuid);
+		return res[2];
+	}
+
+	@Override
+	public void setIndexInfo (String indexInfo) {
+		store.updateIndexInfo(uuid, indexInfo);
+	}
+	
+	@Override
 	public String getName () {
 		return name;
 	}
@@ -257,13 +269,23 @@ public class Tm implements ITm {
 			if ( pstmGet != null ) {
 				pstmGet.close();
 			}
+			
+			codesFields = null;
 			// Check if we have at least one field that is TU-level
 			boolean hasTUField = false;
 			if ( recordFields != null ) {
 				for ( String name : recordFields ) {
-					if ( !DbUtil.isSegmentField(name) ) {
+					if ( DbUtil.isSegmentField(name) ) {
+						// Check if it's a text field
+						if ( name.startsWith(DbUtil.TEXT_PREFIX) ) {
+							if ( codesFields == null ) {
+								codesFields = new ArrayList<String>();
+							}
+							codesFields.add(DbUtil.CODES_PREFIX+DbUtil.getFieldLocale(name));
+						}
+					}
+					else { // TU-level field
 						hasTUField = true;
-						break;
 					}
 				}
 			}
@@ -273,11 +295,14 @@ public class Tm implements ITm {
 				tmp = new StringBuilder(String.format("SELECT %s.\"%s\", %s.\"%s\"", segTable, DbUtil.SEGKEY_NAME, segTable, DbUtil.FLAG_NAME));
 				if ( recordFields != null ) {
 					for ( String name : recordFields ) {
-						if ( DbUtil.isSegmentField(name) ) tmp.append(", "+segTable+".\""+name+"\"");
-						else tmp.append(", "+tuTable+".\""+name+"\"");
+						if ( DbUtil.isSegmentField(name) ) {
+							tmp.append(", "+segTable+".\""+name+"\"");
+						}
+						else {
+							tmp.append(", "+tuTable+".\""+name+"\"");
+						}
 					}
 				}
-				tmp.append(" FROM "+segTable+" LEFT JOIN "+tuTable+" ON "+segTable+".\""+DbUtil.TUREF_NAME+"\"="+tuTable+".TUKEY");
 				
 			}
 			else { // Simple select in the segment table
@@ -287,8 +312,23 @@ public class Tm implements ITm {
 						tmp.append(", \""+name+"\"");
 					}
 				}
-				tmp.append(" FROM \""+name+"_SEG\"");
 			}
+			
+			// Add the codes fields if needed
+//			if ( codesFields != null ) {
+//				for ( String name : codesFields ) {
+//					tmp.append(", "+segTable+".\""+name+"\"");
+//				}
+//			}
+			
+			// Complete the query
+			if ( hasTUField ) {
+				tmp.append(" FROM "+segTable+" LEFT JOIN "+tuTable+" ON "+segTable+".\""+DbUtil.TUREF_NAME+"\"="+tuTable+".TUKEY");
+			}
+			else {
+				tmp.append(" FROM "+segTable);
+			}
+			
 			
 			if ( testMode ) {
 				tmp.append(String.format(" %s ORDER BY %s LIMIT ? OFFSET ?",
@@ -497,27 +537,34 @@ public class Tm implements ITm {
 					}
 	
 					if ( !fieldsToImport.containsKey(name) ) {
-						Object value = fields.get(name);
-						if ( value instanceof String ) {
+						if ( name.startsWith(DbUtil.CODES_PREFIX) ) {
 							type = "VARCHAR";
-							if ( useValuesAsDefault ) fieldsToImport.put(name, value);
-							else fieldsToImport.put(name, null);
-							hasNewFieldToImport = true;
-						}
-						else if (( value instanceof Long ) || ( value instanceof Integer )) {
-							type = "INTEGER";
-							if ( useValuesAsDefault ) fieldsToImport.put(name, value);
-							else fieldsToImport.put(name, 0);
-							hasNewFieldToImport = true;
-						}
-						else if ( value instanceof Boolean ) {
-							type = "BOOLEAN";
-							if ( useValuesAsDefault ) fieldsToImport.put(name, value);
-							else fieldsToImport.put(name, false);
+							fieldsToImport.put(name, null);
 							hasNewFieldToImport = true;
 						}
 						else {
-							throw new RuntimeException("Invalid field type to add.");
+							Object value = fields.get(name);
+							if ( value instanceof String ) {
+								type = "VARCHAR";
+								if ( useValuesAsDefault ) fieldsToImport.put(name, value);
+								else fieldsToImport.put(name, null);
+								hasNewFieldToImport = true;
+							}
+							else if (( value instanceof Long ) || ( value instanceof Integer )) {
+								type = "INTEGER";
+								if ( useValuesAsDefault ) fieldsToImport.put(name, value);
+								else fieldsToImport.put(name, 0);
+								hasNewFieldToImport = true;
+							}
+							else if ( value instanceof Boolean ) {
+								type = "BOOLEAN";
+								if ( useValuesAsDefault ) fieldsToImport.put(name, value);
+								else fieldsToImport.put(name, false);
+								hasNewFieldToImport = true;
+							}
+							else {
+								throw new RuntimeException("Invalid field type to add.");
+							}
 						}
 					}
 					
@@ -872,6 +919,24 @@ public class Tm implements ITm {
 			if ( tmp.length() > 0 ) {
 				stm.execute(tmp.toString());
 			}
+			
+			// Check if the index needs to be updated
+			List<String> fields = DbUtil.indexInfoFromString(getIndexInfo());
+			if ( !Util.isEmpty(fields) ) {
+				ArrayList<String> toRemove = new ArrayList<String>();
+				for ( String fn : fields ) {
+					String loc = DbUtil.getFieldLocale(fn);
+					if ( loc == null ) continue;
+					if ( loc.equals(currentCode) ) {
+						toRemove.add(fn);
+					}
+				}
+				if ( !toRemove.isEmpty() ) {
+					fields.removeAll(toRemove);
+					setIndexInfo(DbUtil.indexInfoToString(fields));
+				}
+				
+			}
 		}
 		catch ( SQLException e ) {
 			throw new RuntimeException(e);
@@ -1087,6 +1152,17 @@ public class Tm implements ITm {
 				throw new RuntimeException(e);
 			}
 		}
+		
+		// Check if the index needs to be updated
+		List<String> fields = DbUtil.indexInfoFromString(getIndexInfo());
+		if ( !Util.isEmpty(fields) ) {
+			if ( fields.contains(currentFullName) ) {
+				fields.remove(currentFullName);
+				setIndexInfo(DbUtil.indexInfoToString(fields));
+			}
+			
+		}
+		
 	}
 
 	@Override

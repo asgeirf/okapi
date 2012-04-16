@@ -24,6 +24,7 @@ import java.io.File;
 import java.net.URI;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import net.sf.okapi.common.LocaleId;
 import net.sf.okapi.common.resource.RawDocument;
@@ -32,6 +33,7 @@ import net.sf.okapi.common.ui.ResourceManager;
 import net.sf.okapi.common.ui.UIUtil;
 import net.sf.okapi.lib.tmdb.DbUtil;
 import net.sf.okapi.lib.tmdb.Exporter;
+import net.sf.okapi.lib.tmdb.IIndexAccess;
 import net.sf.okapi.lib.tmdb.IRepository;
 import net.sf.okapi.lib.tmdb.ITm;
 import net.sf.okapi.lib.tmdb.Importer;
@@ -225,7 +227,7 @@ class RepositoryPanel extends Composite {
 		});
 		tmList.setMenu(contextMenu);
 		
-		resetRepositoryUI(0);
+		resetRepositoryUI("");
 	}
 
 	private TmPanel getTmPanel (int index) {
@@ -275,7 +277,7 @@ class RepositoryPanel extends Composite {
 		}
 		finally {
 			mainForm.getStatusBar().setInfo("", false);
-			resetRepositoryUI(n);
+			resetRepositoryUI("");
 		}
 	}
 	
@@ -310,14 +312,14 @@ class RepositoryPanel extends Composite {
 			
 			// Rename the TM
 			if ( tm == null ) {
-				// No point to the TM yet, get it from the repository
+				// No pointer to the TM yet, get it from the repository
 				// It will get disposed with the garbage collector
 				tm = repo.openTm(tmName);
 			}
 			tm.rename(newName);
  			
 			// Update the UI
-			resetRepositoryUI(-1); // New TM is listed at the end
+			resetRepositoryUI(newName);
 			if ( tp != null ) {
 				// Update the tab name
 				tp.getTabItem().setText(tp.getTm().getName());
@@ -421,7 +423,7 @@ class RepositoryPanel extends Composite {
 			TMOptions opt = options.getItem(tm.getUUID(), true);
 			
 			tmList.add(tm.getName());
-			resetRepositoryUI(-1);
+			resetRepositoryUI(tm.getName());
 			TmPanel tp = mainForm.addTmTabEmpty(tm, opt);
 			if ( fillTm && ( tp != null )) {
 				tp.resetTmDisplay();
@@ -481,7 +483,7 @@ class RepositoryPanel extends Composite {
 			repoType = type;
 			repoParam = param;
 			// Update the display
-			resetRepositoryUI(0);
+			resetRepositoryUI("");
 			updateRepositoryStatus();
 		}
 	}
@@ -498,27 +500,34 @@ class RepositoryPanel extends Composite {
 			repo = null;
 			repoType = "";
 		}
-		resetRepositoryUI(0);
+		resetRepositoryUI("");
 		updateRepositoryStatus();
 	}
 
 	/**
 	 * Resets the content of the panel.
-	 * @param selection -1 to select the last TM, otherwise the index of the TM to select.
+	 * @param selectedTmName use null to select the last entry, an empty string for the first entry.
 	 */
-	void resetRepositoryUI (int selection) {
+	void resetRepositoryUI (String selectedTmName) {
 		tmList.removeAll();
 		if ( repo == null ) {
 			stListTitle.setText(NOREPOSELECTED_TEXT);
 		}
 		else {
 			// Otherwise: populate the list of TMs
-			for ( String name : repo.getTmNames() ) {
-				tmList.add(name);
-			}
-			// Select one
+			java.util.List<String> tmpList = repo.getTmNames();
+			Collections.sort(tmpList, String.CASE_INSENSITIVE_ORDER);
+			tmList.setItems(tmpList.toArray(new String[0]));
+			
+			// Select one item
 			if ( tmList.getItemCount() > 0 ) {
-				if (( selection < 0 ) || ( selection > tmList.getItemCount()-1 )) {
+				int selection = 0; // First by default
+				if ( selectedTmName != null ) {
+					if ( !selectedTmName.isEmpty() ) {
+						selection = tmpList.indexOf(selectedTmName);
+					}
+				}
+				if ( selection < 0 ) {
 					selection = tmList.getItemCount()-1; 
 				}
 				tmList.setSelection(selection);
@@ -614,7 +623,7 @@ class RepositoryPanel extends Composite {
 		}
 		finally {
 			// Update the display
-			resetRepositoryUI(0);
+			resetRepositoryUI("");
 			updateRepositoryStatus();
 		}
 	}
@@ -629,7 +638,8 @@ class RepositoryPanel extends Composite {
 			}
 
 			// Get the file to import
-			String[] paths = Dialogs.browseFilenames(getShell(), "Import File into "+tmName, false, null, null, null);
+			String[] paths = Dialogs.browseFilenames(getShell(), "Import File into "+tmName, false, null,
+				MainForm.FILEFILTER_TEXT, MainForm.FILEFILTER_EXTS);
 			if ( paths == null ) return;
 			
 			InputDocumentDialog dlg = new InputDocumentDialog(getShell(), "Document to import into "+tmName,
@@ -770,9 +780,10 @@ class RepositoryPanel extends Composite {
 			}
 			
 			// Get the Tab and TM data
+			ITm tm;
 			TmPanel tp = mainForm.findTmTab(tmName, true);
 			if ( tp == null ) {
-				ITm tm = repo.openTm(tmName);
+				tm = repo.openTm(tmName);
 				TMOptions opt = options.getItem(tm.getUUID(), true);
 				tp = mainForm.addTmTabEmpty(tm, opt);
 				if ( tp == null ) return;
@@ -780,15 +791,29 @@ class RepositoryPanel extends Composite {
 				mainForm.findTmTab(tmName, true);
 				tp.resetTmDisplay();
 			}
+			else {
+				tm = tp.getTm();
+			}
 			tp.showLog(); // Make sure to display the log
+
+			// prompt the user for information
+			IndexForm dlg = new IndexForm(getShell(), tm);
+			java.util.List<String> fields = dlg.showDialog();
+			if ( fields == null ) return;
+
+			if ( fields.isEmpty() ) {
+				IIndexAccess ia = repo.getIndexAccess();
+				ia.deleteTMIndex(tm.getUUID());
+				return;
+			}
 			
 			// Start the import thread
 			ProgressCallback callback = new ProgressCallback(tp);
-			Indexer exp = new Indexer(callback, repo, tmName);
+			Indexer exp = new Indexer(callback, repo, tmName, fields);
 			tp.startThread(new Thread(exp));
 		}
 		catch ( Throwable e ) {
-			Dialogs.showError(getShell(), "Error while splitting.\n"+e.getMessage(), null);
+			Dialogs.showError(getShell(), "Error while indexing.\n"+e.getMessage(), null);
 		}
 	}
 

@@ -33,21 +33,20 @@ import org.junit.Test;
 public class RegexUtilTest {
 
 	@Test
-	public void testReplaceAll() {
-		
+	public void testReplaceAll() {		
 		assertEquals("e{1@^}ddddd{2@^5}+", RegexUtil.replaceAll("e{1,}ddddd{2,5}+", "\\{.*?(,).*?\\}", 1, "@^"));
+		assertEquals("\"@eins\"\"", RegexUtil.replaceAll("\"\"\"eins\"\"", "((\\\"\\\")+)[^\\\"]|[^\\\"]((\\\"\\\")+)", 1, "@"));
+		assertEquals("\"\"\"eins@", RegexUtil.replaceAll("\"\"\"eins\"\"", "((\\\"\\\")+)[^\\\"]|[^\\\"]((\\\"\\\")+)", 3, "@"));		
 	}
 	
 	@Test
 	public void testCountMatches() {
-		
 		assertEquals(3, RegexUtil.countMatches("1 text 2 text 1 text 1 text 2", "1"));
 		assertEquals(2, RegexUtil.countMatches("1 text 2 text 1 text 1 text 2", "2"));
 	}
 	
 	@Test
-	public void testCountQualifiers() {
-		
+	public void testCountQualifiers() {		
 		assertEquals(3, RegexUtil.countLeadingQualifiers("\"text, \"text\", text,\"text\"\"\"", "\""));
 		assertEquals(4, RegexUtil.countTrailingQualifiers("\"text, \"text\", text,\"text\"\"\"", "\""));
 		assertEquals(3, RegexUtil.countLeadingQualifiers("\"\u0432\u0430\u0432\u044b, " +

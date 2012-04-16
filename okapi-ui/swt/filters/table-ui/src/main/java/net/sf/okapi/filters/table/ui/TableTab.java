@@ -1,5 +1,5 @@
 /*===========================================================================
-  Copyright (C) 2008-2009 by the Okapi Framework contributors
+  Copyright (C) 2008-2012 by the Okapi Framework contributors
 -----------------------------------------------------------------------------
   This library is free software; you can redistribute it and/or modify it 
   under the terms of the GNU Lesser General Public License as published by 
@@ -75,8 +75,10 @@ public class TableTab extends Composite implements IDialogPage, SelectionListene
 	private Text custQualif;
 	private Combo delim;
 	private Combo qualif;
-	private Label label_2;
 	private Label label_3;
+	private Group csvEscapingMode;
+	private Button dupl;
+	private Button bslash;
 
 	/**
 	 * Create the composite.
@@ -160,7 +162,7 @@ public class TableTab extends Composite implements IDialogPage, SelectionListene
 		csvOptions = new Group(this, SWT.NONE);
 		csvOptions.setLayout(new GridLayout(1, false));
 		csvOptions.setText("CSV options");
-		csvOptions.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		csvOptions.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
 		{
 			Composite composite = new Composite(csvOptions, SWT.NONE);
 			composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
@@ -223,42 +225,21 @@ public class TableTab extends Composite implements IDialogPage, SelectionListene
 			}
 		}
 		
-		csvActions = new Group(this, SWT.NONE);
-		csvActions.setLayout(new GridLayout(2, false));
-		csvActions.setText("CSV actions");
-		csvActions.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		csvEscapingMode = new Group(this, SWT.NONE);
+		csvEscapingMode.setLayout(new GridLayout(1, false));
+		csvEscapingMode.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		csvEscapingMode.setText("CSV escaping mode");
 		
-		removeQualif = new Button(csvActions, SWT.CHECK);
-		removeQualif.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1));
-		removeQualif.setText("Exclude qualifiers from extracted text");
+		dupl = new Button(csvEscapingMode, SWT.RADIO);
+		dupl.setSelection(true);
+		dupl.setText("Duplicate qualifier (\"\")");
 		
-		trim = new Button(csvActions, SWT.CHECK);
-		trim.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 2, 1));
-		trim.setData("name", "trim");
-		trim.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				
-				interop(e.widget);
-			}
-		});
-		trim.setText("Exclude leading/trailing white spaces from extracted text");
-		
-		label_2 = new Label(csvActions, SWT.NONE);
-		label_2.setData("name", "label_2");
-		label_2.setText("    ");
-		
-		nqualif = new Button(csvActions, SWT.RADIO);
-		nqualif.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-		nqualif.setText("Only entries without qualifiers    ");
-		new Label(csvActions, SWT.NONE);
-		
-		allT = new Button(csvActions, SWT.RADIO);
-		allT.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-		allT.setText("All");
+		bslash = new Button(csvEscapingMode, SWT.RADIO);
+		bslash.setText("Backslash (\\\")");
 		
 		extr = new Group(this, SWT.NONE);
 		extr.setLayout(new GridLayout(2, false));
-		extr.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		extr.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 2));
 		extr.setText("Extraction mode");
 		
 		header = new Button(extr, SWT.CHECK);
@@ -290,6 +271,38 @@ public class TableTab extends Composite implements IDialogPage, SelectionListene
 		body.addSelectionListener(this);
 		body.setData("name", "body");
 		body.setText("Extract table data");
+		
+		csvActions = new Group(this, SWT.NONE);
+		csvActions.setLayout(new GridLayout(1, false));
+		csvActions.setText("CSV actions");
+		csvActions.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		
+		removeQualif = new Button(csvActions, SWT.CHECK);
+		removeQualif.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		removeQualif.setText("Exclude qualifiers from extracted text");
+		
+		trim = new Button(csvActions, SWT.CHECK);
+		trim.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		trim.setData("name", "trim");
+		trim.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				
+				interop(e.widget);
+			}
+		});
+		trim.setText("Exclude leading/trailing white spaces from extracted text");
+		
+		nqualif = new Button(csvActions, SWT.RADIO);
+		GridData gd_nqualif = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
+		gd_nqualif.horizontalIndent = 20;
+		nqualif.setLayoutData(gd_nqualif);
+		nqualif.setText("Only entries without qualifiers    ");
+		
+		allT = new Button(csvActions, SWT.RADIO);
+		GridData gd_allT = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
+		gd_allT.horizontalIndent = 20;
+		allT.setLayoutData(gd_allT);
+		allT.setText("All");
 
 	}
 
@@ -306,6 +319,7 @@ public class TableTab extends Composite implements IDialogPage, SelectionListene
 	public void interop(Widget speaker) {
 
 		SWTUtil.setAllEnabled(csvOptions, btnCSV.getSelection());
+		SWTUtil.setAllEnabled(csvEscapingMode, btnCSV.getSelection());
 		SWTUtil.setAllEnabled(csvActions, btnCSV.getSelection());
 		
 		custDelim.setEnabled(delim.getSelectionIndex() == 4);		
@@ -319,12 +333,11 @@ public class TableTab extends Composite implements IDialogPage, SelectionListene
 		boolean noColNames = cols.getSelection() == 0;
 		
 		//if (noQualif || !csvActions.getEnabled()) removeQualif.setSelection(false);		
-		if (noQualif && csvActions.getEnabled()) removeQualif.setSelection(false);
-		removeQualif.setEnabled(!noQualif && csvActions.getEnabled());
+		if (noQualif && btnCSV.getSelection()) removeQualif.setSelection(false);
+		removeQualif.setEnabled(!noQualif && btnCSV.getSelection());
 		
 		//----------------------------
-		if (noQualif) {
-			
+		if (noQualif) {			
 			nqualif.setSelection(false);
 			nqualif.setEnabled(false);
 						
@@ -334,17 +347,15 @@ public class TableTab extends Composite implements IDialogPage, SelectionListene
 //			trim.setSelection(false);
 //			trim.setEnabled(false);
 		}
-		else {
-						
-			nqualif.setEnabled(trimOn);
-			allT.setEnabled(trimOn);
+		else {						
+			nqualif.setEnabled(trimOn && btnCSV.getSelection());
+			allT.setEnabled(trimOn && btnCSV.getSelection());
 			
 		}
 
 //		trim.setEnabled(csvActions.getEnabled());
 		
-		if (!trimOn) {
-			
+		if (!trimOn) {			
 			trim.setSelection(false);
 			nqualif.setSelection(false);
 			allT.setSelection(false);
@@ -354,8 +365,8 @@ public class TableTab extends Composite implements IDialogPage, SelectionListene
 		}
 		else {
 			
-			nqualif.setEnabled(!noQualif && csvActions.getEnabled());
-			allT.setEnabled(csvActions.getEnabled());
+			nqualif.setEnabled(!noQualif && btnCSV.getSelection());
+			allT.setEnabled(btnCSV.getSelection());
 			
 			if (!nqualif.getSelection() && !allT.getSelection()) { // Default selection if none selected
 				
@@ -521,6 +532,12 @@ public class TableTab extends Composite implements IDialogPage, SelectionListene
 				}
 				
 				removeQualif.setSelection(params.removeQualifiers);
+				
+				dupl.setSelection(params.escapingMode ==
+						net.sf.okapi.filters.table.csv.Parameters.ESCAPING_MODE_DUPLICATION);
+				
+				bslash.setSelection(params.escapingMode ==
+						net.sf.okapi.filters.table.csv.Parameters.ESCAPING_MODE_BACKSLASH);
 			}
 //			else if (data instanceof net.sf.okapi.filters.table.tsv.Parameters) {
 //				
@@ -596,7 +613,7 @@ public class TableTab extends Composite implements IDialogPage, SelectionListene
 					nqualif.setSelection(false);
 					allT.setSelection(false);
 				}				
-			}			
+			}
 		}
 
 		return true;
@@ -668,7 +685,13 @@ public class TableTab extends Composite implements IDialogPage, SelectionListene
 					break;				
 				}
 				
-				params.removeQualifiers = removeQualif.getSelection();				
+				params.removeQualifiers = removeQualif.getSelection();
+				
+				if (dupl.getSelection()) params.escapingMode = 
+						net.sf.okapi.filters.table.csv.Parameters.ESCAPING_MODE_DUPLICATION;
+				
+				if (bslash.getSelection()) params.escapingMode =
+						net.sf.okapi.filters.table.csv.Parameters.ESCAPING_MODE_BACKSLASH;						
 			}
 //			else if (data instanceof net.sf.okapi.filters.table.tsv.Parameters) {
 //				

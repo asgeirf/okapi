@@ -134,7 +134,8 @@ public class BasePlainTextFilter extends AbstractLineFilter {
 		
 		if (!processTU(textUnit)) return TextProcessingResult.REJECTED;
 		
-		if (rejectEmpty && !TextUnitUtil.hasSource(textUnit)) return TextProcessingResult.REJECTED;
+		//if (rejectEmpty && !TextUnitUtil.hasSource(textUnit)) return TextProcessingResult.REJECTED;
+		if (rejectEmpty && isEmpty(textUnit)) return TextProcessingResult.REJECTED;
 		
 		sendEvent(EventType.TEXT_UNIT, textUnit);
 		
@@ -329,8 +330,7 @@ public class BasePlainTextFilter extends AbstractLineFilter {
 		
 		// GenericSkeleton skel = TextUnitUtil.forseSkeleton(textUnit);
 		
-		if (!checkTU(source)) return false;
-		if (source.isEmpty()) return false;
+		if (!checkTU(textUnit)) return false;
 		
 		// We can use getFirstPartContent() because nothing is segmented yet
 		if (params.unescapeSource) _unescape(source.getFirstContent());
@@ -396,13 +396,17 @@ public class BasePlainTextFilter extends AbstractLineFilter {
 		
 		return true;
 	}
-
 	
-	protected boolean checkTU(TextContainer tuSource) {
-		// Can be overridden in descendant classes
-		
-		return true;		
+	protected boolean checkTU(ITextUnit textUnit) {
+		// Can be overridden in descendant classes		
+		return true;
 	}	
+	
+	protected boolean isEmpty(ITextUnit textUnit) {
+		// Can be overridden in descendant classes
+		//return false;
+		return TextUnitUtil.isEmpty(textUnit);
+	}
 	
 	@Override
 	protected TextProcessingResult component_exec(TextContainer lineContainer) {
@@ -465,7 +469,9 @@ public class BasePlainTextFilter extends AbstractLineFilter {
 					tmpText.append("\t");
 					i++;
 					continue;
-				}
+				default: // Stand-alone "\"
+					tmpText.append(text.charAt(i));
+				}				
 			}
 			else tmpText.append(text.charAt(i));
 		}

@@ -59,14 +59,14 @@ public class Parameters extends net.sf.okapi.filters.plaintext.base.Parameters {
 	final public static int TRIM_ALL = 2;
 		
 	/**
-	 * Number of the line (1-based) containing filed names (column captions).<p>
-	 * Default: 1
+	 * Number of the line (1-based) containing field names (column captions).<p>
+	 * Default: 0
 	 */
 	public int columnNamesLineNum;
 	
 	/**
 	 * Number of the line (1-based) where actual data start after the header.<p>
-	 * Default: 2
+	 * Default: 1
 	 */
 	public int valuesStartLineNum;
 	
@@ -116,7 +116,7 @@ public class Parameters extends net.sf.okapi.filters.plaintext.base.Parameters {
 	 * <li>SEND_COLUMNS_LISTED = 1 - only values from the columns listed in idColumns, sourceColumns, targetColumns, commentColumns 
 	 * will be sent
 	 * <li>SEND_COLUMNS_ALL = 2 - values from all columns will be sent.<p>
-	 * Default: SEND_COLUMNS_ALL (send all columns)
+	 * Default: SEND_COLUMNS_LISTED (send only columns listed in idColumns, sourceColumns, targetColumns, commentColumns)
 	 */
 	public int sendColumnsMode;
 	

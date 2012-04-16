@@ -52,7 +52,7 @@ public class DocumentPartLogger extends BasePipelineStep {
 	}
 	
 	private static void fillSB(StringBuilder sb, DocumentPart dp, LocaleId srcLoc) {
-		sb.append(dp.getId());		
+		sb.append("dp [" + dp.getId() + "]");		
 		sb.append(":");
 		if (dp.isReferent()) sb.append(" referent");
 		sb.append("\n");

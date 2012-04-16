@@ -1,4 +1,4 @@
-﻿<html>
+﻿﻿<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Okapi Changes Log</title>
@@ -21,11 +21,28 @@ distribution.</p>
 	<li>Google Code Project site: <a href="http://code.google.com/p/okapi/">
 	http://code.google.com/p/okapi/</a></li>
 </ul>
-<h2>Changes from M15 to M16-SNAPSHOT</h2>
+<h2>Changes from M16 to M17-SNAPSHOT</h2>
+<ul>
+	<li>None yet</li>
+</ul>
+<h2>Changes from M15 to M16</h2>
 <ul>
 	<li>Rainbow:<ul>
-	<li>Rainbow now return a non-zero error code if the command-line ends with 
+	<li>Rainbow now returns a non-zero error code if the command-line ends with 
 	an error (Issue #201)</li>
+</ul>
+	</li>
+	<li>Tikal:<ul>
+	<li>Fixed issue #215 by always adding the HTML filter to the mapping because 
+	now several filters use it as sub-filter.</li>
+</ul>
+	</li>
+	<li>Ratel:<ul>
+	<li>Added an option to allow backward compatibility with Java regular 
+	expressions.</li>
+	<li>Improved the UI to separate standard options from extensions.</li>
+	<li>Changed the UI to start with an empty document with a single default 
+	language map.</li>
 </ul>
 	</li>
 	<li>Filters:<ul>
@@ -39,17 +56,28 @@ distribution.</p>
 </ul>
 	</li>
 	<li>Properties Filter:<ul>
-	<li>Fixed the default rule for Java inline code so escaped is supported.</li>
+	<li>Fixed the default rule for Java inline codes so escaped is supported.</li>
 	<li>Fixed the issue where custom filter configurations for sub-filters were 
 	not loaded properly.</li>
 </ul>
 	</li>
+	<li>Table Filter:<ul>
+	<li>Added handling of 2 escaping modes for qualifiers in CSV files:<br>
+	- by duplication of the qualifier (e.g. "translate=""yes""")<br> 
+	- by backslash escaping (e.g. "translate=\"yes\"")</li>
+	<li>Added a new parameter to CSV filter: int escapingMode<br>
+	int ESCAPING_MODE_DUPLICATION = 1 (default)<br>
+	int ESCAPING_MODE_BACKSLASH = 2<br>
+	</li>
+	<li>Added the "CSV escaping mode" group to the parameters editor.</li>
+	<li>Fixed a bug with disabling CSV-related elements in the parameters editor.</li>
+</ul>
 	<li>TS Filter:<ul>
-	<li>Fixed the default rule for Java inline code so escaped is supported.</li>
+	<li>Fixed the default rule for Java inline codes so escaped is supported.</li>
 </ul>
 	</li>
 	<li>PO Filter:<ul>
-	<li>Fixed the default rule for Java inline code so escaped is supported.</li>
+	<li>Fixed the default rule for Java inline codes so escaped is supported.</li>
 </ul>
 	</li>
 	<li>IDML Filter:<ul>
@@ -111,7 +139,8 @@ distribution.</p>
 	<b>Important: This may affect segmentation with your existing SRX files. For 
 	example \w now matches also accented letters (the normal Java \w does not). 
 	See <a href="http://www.opentag.com/okapi/wiki/index.php?title=SRX_and_Java">
-	SRX and Java</a> for details.</b></li>
+	SRX and Java</a> for details. use the new &quot;use Java regular expressions&quot; 
+	options to force backward compatibility.</b></li>
 </ul>
 	</li>
 </ul>

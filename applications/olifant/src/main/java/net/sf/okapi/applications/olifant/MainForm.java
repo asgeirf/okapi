@@ -81,6 +81,10 @@ public class MainForm {
 
 	private static final String HELP_USAGE = "Olifant - Usage"; //$NON-NLS-1$
 	
+	static final String FILEFILTER_TEXT = "TMX and Translation Files\tAll Files (*.*)";
+	static final String FILEFILTER_EXTS = "*.tmx;*.xlf;*.po;*.ttx;*.ts;*.rtf\t*.*";
+
+	
 	private Shell shell;
 	private UserConfiguration config;
 	private ResourceManager rm;
@@ -111,6 +115,7 @@ public class MainForm {
 	private MenuItem miTMRename;
 	private MenuItem miTMEditColumns;
 	private MenuItem miTMEditLocales;
+	private MenuItem miTMManageIndex;
 	private MenuItem miTMEditProperties;
 	private MenuItem miShowHideThirdField;
 	private MenuItem miShowHideFieldList;
@@ -447,6 +452,7 @@ public class MainForm {
 		miTMRename.setEnabled(active);
 		miTMEditColumns.setEnabled(active);
 		miTMEditLocales.setEnabled(active);
+		miTMManageIndex.setEnabled(active);
 		miTMEditProperties.setEnabled(active);
 		
 		toolBar.update(currentTP);
@@ -695,6 +701,8 @@ public class MainForm {
             }
 		});
 		
+		new MenuItem(dropMenu, SWT.SEPARATOR);
+
 		miRefresh = new MenuItem(dropMenu, SWT.PUSH);
 		rm.setCommand(miRefresh, "entries.refresh"); //$NON-NLS-1$
 		miRefresh.addSelectionListener(new SelectionAdapter() {
@@ -703,6 +711,8 @@ public class MainForm {
             }
 		});
 		
+		new MenuItem(dropMenu, SWT.SEPARATOR);
+
 		miEditSearch = new MenuItem(dropMenu, SWT.PUSH);
 		rm.setCommand(miEditSearch, "edit.search"); //$NON-NLS-1$
 		miEditSearch.addSelectionListener(new SelectionAdapter() {
@@ -771,6 +781,16 @@ public class MainForm {
             }
 		});
 		
+		miTMManageIndex = new MenuItem(dropMenu, SWT.PUSH);
+		rm.setCommand(miTMManageIndex, "tm.manageindex"); //$NON-NLS-1$
+		miTMManageIndex.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				repoPanel.indexTM(currentTP.getTm().getName());
+            }
+		});
+		
+		new MenuItem(dropMenu, SWT.SEPARATOR);
+
 		miTMEditProperties = new MenuItem(dropMenu, SWT.PUSH);
 		rm.setCommand(miTMEditProperties, "tm.properties"); //$NON-NLS-1$
 		miTMEditProperties.addSelectionListener(new SelectionAdapter() {
@@ -916,7 +936,8 @@ public class MainForm {
 	private void openFile (String[] paths) {
 		try {
 			if ( paths == null ) {
-				paths = Dialogs.browseFilenames(shell, "Open Files in New TMs", true, null, null, null);
+				paths = Dialogs.browseFilenames(shell, "Open Files in New TMs", true, null,
+					FILEFILTER_TEXT, FILEFILTER_EXTS);
 			}
 			if ( paths == null ) return;
 			boolean acceptAll = false;

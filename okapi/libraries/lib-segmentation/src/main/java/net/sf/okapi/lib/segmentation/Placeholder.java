@@ -139,10 +139,11 @@ class Placeholder {
 	
 	private String escapeSpecChars(String chars) {
 		// TODO ? wrap with \Q..\E
+		chars = chars.replace("\\", "\\\\)");
 		chars = chars.replace("[", "\\[");
 		chars = chars.replace("]", "\\]");
 		chars = chars.replace("(", "\\(");
-		chars = chars.replace(")", "\\)");		
+		chars = chars.replace(")", "\\)");				
 		return chars;
 //		return Util.isEmpty(chars)? "" : String.format("\\Q%s\\E", chars);
 	}

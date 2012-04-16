@@ -63,6 +63,7 @@ public class TextUnitLogger extends BasePipelineStep {
 	@Override
 	protected Event handleTextUnit(Event event) {
 		ITextUnit tu = event.getTextUnit();
+		sb.append("---------------------------------\n");
 		fillSB(sb, tu, srcLoc);
 		return super.handleTextUnit(event);
 	}
@@ -74,7 +75,7 @@ public class TextUnitLogger extends BasePipelineStep {
 	}
 	
 	private static void fillSB(StringBuilder sb, ITextUnit tu, LocaleId srcLoc) {
-		sb.append(tu.getId());
+		sb.append("tu [" + tu.getId() + "]");
 		sb.append(":");
 		if (tu.isReferent()) sb.append(" referent");
 		sb.append("\n");

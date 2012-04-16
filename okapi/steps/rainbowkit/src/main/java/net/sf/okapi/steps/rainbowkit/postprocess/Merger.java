@@ -73,6 +73,7 @@ public class Merger {
 	 * @param preserveSegmentation true to preserve the segmentation after the merge is done.
 	 * @param forcedTargetLocale null to use the target locale in the manifest, otherwise: the target locale to merge.
 	 * @param returnRawDocument true to return a raw document rather than filter events.
+	 * @param overrideOutputPath path of the output path to use instead of the default one, use null to use the default.
 	 */
 	public Merger (Manifest manifest,
 		IFilterConfigurationMapper fcMapper,
@@ -237,10 +238,11 @@ public class Merger {
 		return event;
 	}
 	
-	private String getOutputPath(MergingInfo info) {
-		if (Util.isEmpty(this.overrideOutputPath)) {
+	private String getOutputPath (MergingInfo info) {
+		if ( Util.isEmpty(this.overrideOutputPath) ) {
 			return manifest.getMergeDirectory() + info.getRelativeTargetPath();
-		} else {
+		}
+		else {
 			return Util.ensureSeparator(overrideOutputPath, false) + info.getRelativeTargetPath();
 		}
 	}

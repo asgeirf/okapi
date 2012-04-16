@@ -124,11 +124,11 @@ public class OptionsTab extends Composite implements IDialogPage {
 		
 		unwrap = new Button(multi, SWT.RADIO);
 		unwrap.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-		unwrap.setText("Unwrap lines (replace line ends with spaces)         ");
+		unwrap.setText("Unwrap lines (replace line breaks with spaces)         ");
 		
 		codes = new Button(multi, SWT.RADIO);
 		codes.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-		codes.setText("Create inline codes for line ends");
+		codes.setText("Create inline codes for line breaks");
 
 		grpInlineCodes = new Group(this, SWT.NONE);
 		grpInlineCodes.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));

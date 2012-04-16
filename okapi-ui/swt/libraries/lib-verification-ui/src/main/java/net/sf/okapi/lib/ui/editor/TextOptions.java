@@ -1,5 +1,5 @@
 /*===========================================================================
-  Copyright (C) 2010 by the Okapi Framework contributors
+  Copyright (C) 2010-2012 by the Okapi Framework contributors
 -----------------------------------------------------------------------------
   This library is free software; you can redistribute it and/or modify it 
   under the terms of the GNU Lesser General Public License as published by 
@@ -70,12 +70,19 @@ public class TextOptions {
 	 * Creates a new set of options by copying the information defined
 	 * for a given StyledText control.
 	 * @param device the device for this context.
-	 * @param the StyledText control where to copy the data from.
+	 * @param control the StyledText control where to copy the data from.
+	 * @param sizeIncrease the size increase to apply (use 0 for none)
 	 */
 	public TextOptions (Device device,
-		StyledText control)
+		StyledText control,
+		int sizeIncrease)
 	{
-		font = new Font(device, control.getFont().getFontData());
+		Font tmp = control.getFont();
+		// Make the font a bit larger by default
+		FontData[] fontData = tmp.getFontData();
+		fontData[0].setHeight(fontData[0].getHeight()+sizeIncrease);
+		font = new Font(device, fontData[0]);
+
 		isBidirectional = (control.getOrientation() == SWT.RIGHT_TO_LEFT);
 		foreground = new Color(device, control.getForeground().getRGB());
 		background = new Color(device, control.getBackground().getRGB());

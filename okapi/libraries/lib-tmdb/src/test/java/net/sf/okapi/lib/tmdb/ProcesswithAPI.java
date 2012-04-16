@@ -2,7 +2,6 @@ package net.sf.okapi.lib.tmdb;
 
 import static org.junit.Assert.*;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,6 +70,7 @@ public class ProcesswithAPI {
 		tm.startImport();
 		LinkedHashMap<String, Object> segMap = new LinkedHashMap<String, Object>();
 		segMap.put(DbUtil.TEXT_PREFIX+"EN", "Text EN 1");
+		segMap.put(DbUtil.CODES_PREFIX+"EN", null);
 		tm.addRecord(-1, null, segMap);
 		tm.finishImport();
 
@@ -89,6 +89,7 @@ public class ProcesswithAPI {
 		tm.startImport();
 		segMap.clear();
 		segMap.put(DbUtil.TEXT_PREFIX+"EN", "Text EN 2");
+		segMap.put(DbUtil.CODES_PREFIX+"EN", null);
 		segMap.put("Quality"+DbUtil.LOC_SEP+"EN", 80);
 
 		LinkedHashMap<String, Object> tuMap = new LinkedHashMap<String, Object>();
@@ -110,12 +111,16 @@ public class ProcesswithAPI {
 		tm.startImport();
 		segMap.clear();
 		segMap.put(DbUtil.TEXT_PREFIX+"EN", "Text EN 3");
+		segMap.put(DbUtil.CODES_PREFIX+"EN", null);
 		segMap.put(DbUtil.TEXT_PREFIX+"FR", "Text FR 3");
+		segMap.put(DbUtil.CODES_PREFIX+"FR", null);
 		segMap.put("Quality"+DbUtil.LOC_SEP+"FR", 33);
 		tm.addRecord(-1, null, segMap);
 		segMap.clear();
 		segMap.put(DbUtil.TEXT_PREFIX+"EN", "Text EN 4");
+		segMap.put(DbUtil.CODES_PREFIX+"EN", null);
 		segMap.put(DbUtil.TEXT_PREFIX+"FR", "Text FR 4");
+		segMap.put(DbUtil.CODES_PREFIX+"FR", null);
 		tm.addRecord(-1, null, segMap);
 		tm.finishImport();
 

@@ -4,7 +4,7 @@
     <parent>
         <artifactId>build-filters</artifactId>
         <groupId>net.sf.okapi.filters</groupId>
-        <version>0.16-SNAPSHOT</version>
+        <version>0.17-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>okapi-filter-pensieve</artifactId>
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>net.sf.okapi.tm</groupId>
             <artifactId>okapi-tm-pensieve</artifactId>
-            <version>0.16-SNAPSHOT</version>
+            <version>0.17-SNAPSHOT</version>
         </dependency>        
     </dependencies>
 </project>

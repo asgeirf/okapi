@@ -4,10 +4,9 @@
     <parent>
         <artifactId>build-libraries</artifactId>
         <groupId>net.sf.okapi.lib</groupId>
-        <version>0.16-SNAPSHOT</version>        
+        <version>0.17-SNAPSHOT</version>        
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>net.sf.okapi.lib</groupId>
     <artifactId>okapi-lib-extra</artifactId>
     <name>Okapi Library with Helper Classes for Filters and Steps</name>
     <dependencies>

@@ -1041,6 +1041,10 @@ class TmPanel extends Composite implements IObserver, ISegmentEditorUser {
 				updateCurrentEntry();
 				statusBar.setPage(tm.getCurrentPage(), tm.getPageCount());
 			}
+			else {
+				updateCurrentEntry();
+				statusBar.setPage(-1, tm.getPageCount());
+			}
 		}
 		catch ( Throwable e ) {
 			Dialogs.showError(getShell(), "Error while filling the table.\n"+e.getMessage(), null);
@@ -1091,8 +1095,10 @@ class TmPanel extends Composite implements IObserver, ISegmentEditorUser {
 		// Update the list of the repositories if needed
 		if ( arg != null ) {
 			if (( arg instanceof Boolean ) && (Boolean)arg ) {
-				int n = mainForm.getRepositoryPanel().getTmList().getSelectionIndex();
-				mainForm.getRepositoryPanel().resetRepositoryUI(n);
+				String[] sel = mainForm.getRepositoryPanel().getTmList().getSelection();
+				String name = "";
+				if ( sel.length > 0 ) name = sel[0]; 
+				mainForm.getRepositoryPanel().resetRepositoryUI(name);
 				mainForm.getRepositoryPanel().updateRepositoryStatus();
 			}
 		}

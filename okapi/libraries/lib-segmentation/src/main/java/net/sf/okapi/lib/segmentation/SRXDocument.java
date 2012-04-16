@@ -1,5 +1,5 @@
 /*===========================================================================
-  Copyright (C) 2008-2010 by the Okapi Framework contributors
+  Copyright (C) 2008-2012 by the Okapi Framework contributors
 -----------------------------------------------------------------------------
   This library is free software; you can redistribute it and/or modify it 
   under the terms of the GNU Lesser General Public License as published by 
@@ -95,6 +95,7 @@ public class SRXDocument {
 	private boolean oneSegmentIncludesAll;
 	private boolean trimLeadingWS;
 	private boolean trimTrailingWS;
+	private boolean useJavaRegex;
 	private String version = "2.0";
 	private String warning;
 	private String sampleText;
@@ -198,6 +199,7 @@ public class SRXDocument {
 		oneSegmentIncludesAll = false; // Extension
 		trimLeadingWS = false; // Extension
 		trimTrailingWS = false; // Extension
+		useJavaRegex = false; // Extension
 
 		sampleText = "Mr. Holmes is from the U.K. not the U.S. <B>Is Dr. Watson from there too?</B> Yes: both are.<BR/>";
 		sampleLanguage = "en";
@@ -287,6 +289,25 @@ public class SRXDocument {
 	public void setOneSegmentIncludesAll (boolean value) {
 		if ( value != oneSegmentIncludesAll ) {
 			oneSegmentIncludesAll = value;
+			modified = true;
+		}
+	}
+
+	/**
+	 * Indicates if this document has rules that are defined for the Java regular expression engine (vs ICU).
+	 * @return true if the rules are for the Java regular expression engine, false if they are for ICU.
+	 */
+	public boolean useJavaRegex () {
+		return useJavaRegex;
+	}
+	
+	/**
+	 * Sets the indicator that tells if this document has rules that are defined for the Java regular expression engine (vs ICU).
+	 * @param value true if the rules should be treated as Java regular expression, false for ICU.
+	 */
+	public void setUseJavaRegex (boolean value) {
+		if ( value != useJavaRegex ) {
+			useJavaRegex = value;
 			modified = true;
 		}
 	}
@@ -571,7 +592,7 @@ public class SRXDocument {
 		segmenter.setCascade(cascade);
 		segmenter.setOptions(segmentSubFlows, includeStartCodes,
 			includeEndCodes, includeIsolatedCodes, 	oneSegmentIncludesAll,
-			trimLeadingWS, trimTrailingWS);
+			trimLeadingWS, trimTrailingWS, useJavaRegex);
 		
 		for ( LanguageMap langMap : langMaps ) {
 			if ( Pattern.matches(langMap.pattern, languageCode.toString()) ) {
@@ -614,7 +635,7 @@ public class SRXDocument {
 		icuRegex = segmenter.getICURegex();
 		segmenter.setOptions(segmentSubFlows, includeStartCodes,
 			includeEndCodes, includeIsolatedCodes, oneSegmentIncludesAll,
-			trimLeadingWS, trimTrailingWS);
+			trimLeadingWS, trimTrailingWS, useJavaRegex);
 		compileRules(segmenter, ruleName);
 		segmenter.setLanguage(LocaleId.EMPTY);
 		return segmenter;
@@ -641,30 +662,47 @@ public class SRXDocument {
 				
 				if (hasICURules) icuRegex.setHasICURules(true);
 				
-				if ( rule.before.endsWith(NOAUTO)) {
-					// If the rule.before ends with NOAUTO, then we do not put pattern for in-line codes
-					pattern = "(" +
-						WrapBeforePart(rule.before.substring(0,
-							rule.before.length()-NOAUTO.length()), hasICURules) +
-							")(" + WrapAfterPart(rule.after, hasICURules) + ")";
+				if (useJavaRegex) {
+					if ( rule.before.endsWith(NOAUTO)) {
+						// If the rule.before ends with NOAUTO, then we do not put pattern for in-line codes
+						pattern = "("+rule.before.substring(0, rule.before.length()-NOAUTO.length())
+							+")("+rule.after+")";
+					}
+					else {
+						// The compiled rule is made of two groups: the pattern before and the pattern after
+						// the break. A special pattern for in-line codes is also added transparently.
+						pattern = "("+rule.before+AUTO_INLINECODES+")("+rule.after+")";
+					}
 				}
 				else {
-					// The compiled rule is made of two groups: the pattern before and the pattern after
-					// the break. A special pattern for in-line codes is also added transparently.
-					pattern = "(" + WrapBeforePart(rule.before, hasICURules)	+
-							AUTO_INLINECODES + ")(" + 
-							WrapAfterPart(rule.after, hasICURules) + ")";
+					if ( rule.before.endsWith(NOAUTO)) {
+						// If the rule.before ends with NOAUTO, then we do not put pattern for in-line codes
+						pattern = "(" +
+							WrapBeforePart(rule.before.substring(0,
+								rule.before.length()-NOAUTO.length()), hasICURules) +
+								")(" + WrapAfterPart(rule.after, hasICURules) + ")";
+					}
+					else {
+						// The compiled rule is made of two groups: the pattern before and the pattern after
+						// the break. A special pattern for in-line codes is also added transparently.
+						pattern = "(" + WrapBeforePart(rule.before, hasICURules)	+
+								AUTO_INLINECODES + ")(" + 
+								WrapAfterPart(rule.after, hasICURules) + ")";
+					}
 				}
 				// Replace special markers ANYCODES by inline code pattern
 				pattern = pattern.replace(ANYCODE, INLINECODE_PATTERN);
 				
-				// We need to increase the numbers by 1 as we add the 
-				// before-break group to the rule
-				pattern = RegexUtil.updateGroupReferences(pattern, 1);				
-				if (hasICURules) {
-					pattern = icuRegex.processRule(pattern);
-				}				
-				//pattern = pattern.replaceAll(Placeholder.AREA_MARKERS, "");
+				if (!useJavaRegex) {
+					// We need to increase the numbers by 1 as we add the 
+					// before-break group to the rule
+					pattern = RegexUtil.updateGroupReferences(pattern, 1);				
+					if (hasICURules) {
+						pattern = icuRegex.processRule(pattern);
+					}				
+					//pattern = pattern.replaceAll(Placeholder.AREA_MARKERS, "");
+				}
+				
 				// Compile and add the rule
 				segmenter.addRule(new CompiledRule(pattern, rule.isBreak));
 			}
@@ -835,6 +873,9 @@ public class SRXDocument {
 				
 				tmp = elem2.getAttribute("trimTrailingWhitespaces");
 				if ( tmp.length() > 0 ) trimTrailingWS = "yes".equals(tmp);
+
+				tmp = elem2.getAttribute("useJavaRegex");
+				if ( tmp.length() > 0 ) useJavaRegex = "yes".equals(tmp);
 			}
 
 			// Extension: sample
@@ -1039,7 +1080,9 @@ public class SRXDocument {
 				writer.writeAttributeString("trimLeadingWhitespaces",
 					(trimLeadingWS ? "yes" : "no"));
 				writer.writeAttributeString("trimTrailingWhitespaces",
-					(trimTrailingWS ? "yes" : "no"));
+						(trimTrailingWS ? "yes" : "no"));
+				writer.writeAttributeString("useJavaRegex",
+						(useJavaRegex ? "yes" : "no"));
 				writer.writeEndElementLineBreak(); // okpsrx:options
 
 				writer.writeStartElement(NSPREFIX_OKPSRX+":sample");

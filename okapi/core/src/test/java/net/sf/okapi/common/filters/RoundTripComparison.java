@@ -116,7 +116,7 @@ public class RoundTripComparison {
 		writer = filter.createFilterWriter();
 
 		for (InputDocument doc : inputDocs) {
-			LOGGER.fine("Processing Document: " + doc.path);
+			LOGGER.info("Processing Document: " + doc.path);
 			// Reset the event lists
 			extraction1Events.clear();
 			extraction2Events.clear();

@@ -1,5 +1,5 @@
 /*===========================================================================
-  Copyright (C) 2010-2011 by the Okapi Framework contributors
+  Copyright (C) 2010-2012 by the Okapi Framework contributors
 -----------------------------------------------------------------------------
   This library is free software; you can redistribute it and/or modify it 
   under the terms of the GNU Lesser General Public License as published by 
@@ -73,8 +73,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.events.ShellListener;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -777,12 +775,7 @@ public class QualityCheckEditor implements IQualityCheckEditor {
 		}
 		if ( Util.isEmpty(data) ) { // Default
 			// Create a copy of the default text field options for the source
-			srcTextOpt = new TextOptions(shell.getDisplay(), edSource);
-			Font tmp = srcTextOpt.font;
-			// Make the font a bit larger by default
-			FontData[] fontData = tmp.getFontData();
-			fontData[0].setHeight(fontData[0].getHeight()+2);
-			srcTextOpt.font = new Font(shell.getDisplay(), fontData[0]);
+			srcTextOpt = new TextOptions(shell.getDisplay(), edSource, 2);
 		}
 		// And apply them to the source control to allow clean disposal later
 		srcTextOpt.applyTo(edSource);

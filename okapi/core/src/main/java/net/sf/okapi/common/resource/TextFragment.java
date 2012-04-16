@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.okapi.common.filters.PropertyTextUnitPlaceholder.PlaceholderAccessType;
-
 /**
  * Implements the methods for creating and manipulating a pre-parsed
  * flat representation of a content with in-line codes.

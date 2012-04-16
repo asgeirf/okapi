@@ -3,7 +3,7 @@
   <parent>
     <artifactId>build-steps</artifactId>
     <groupId>net.sf.okapi.steps</groupId>
-    <version>0.16-SNAPSHOT</version>
+    <version>0.17-SNAPSHOT</version>
   </parent>
   <artifactId>okapi-step-repetitionanalysis</artifactId>
   <name>Okapi Step for Repetition Analysis</name>

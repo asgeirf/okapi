@@ -54,7 +54,7 @@ public class TuDpLogger extends BasePipelineStep {
 	
 	@Override
 	protected Event handleEndBatch(Event event) {
-		logger.fine(sb.toString());
+		logger.info(sb.toString());
 		return super.handleEndBatch(event);
 	}
 }

@@ -114,7 +114,7 @@ public class Editor extends FilterParametersEditor {
 
 		if (speaker == allow && SWTUtil.getSelected(trim) && SWTUtil.getSelected(btnCSV))
 			Dialogs.showWarning(getShell(),
-					"You cannot unselect this check-box while the Table/Trim values box is on.", null);
+					"You cannot unselect this check-box while the \"Table/CSV actions/Exclude leading/trailing white spaces from extracted text\" box is on.", null);
 
 		if (speaker == body && (SWTUtil.getDisabled(header) || SWTUtil.getNotSelected(header)))
 			Dialogs.showWarning(getShell(),

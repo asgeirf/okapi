@@ -1062,7 +1062,8 @@ public class TextUnitUtil {
 		int startQualifierLen = startQualifier.length();
 		int endQualifierLen = endQualifier.length();
 
-		if (st.startsWith(startQualifier) && st.endsWith(endQualifier)) {
+		if (st.startsWith(startQualifier) && st.endsWith(endQualifier) && 
+				st.length() >= 2) {
 
 			GenericSkeleton tuSkel = TextUnitUtil.forceSkeleton(textUnit);
 			GenericSkeleton skel = new GenericSkeleton();

@@ -438,9 +438,8 @@ public class SRXEditor {
 			}
 		}
 
-
-		updateCaption();
-		updateAll();
+		// Start with a default document
+		newSRXDocument(1, false);
 	}
 	
 	private void createMenus () {
@@ -459,7 +458,7 @@ public class SRXEditor {
 		rm.setCommand(menuItem, "file.new"); //$NON-NLS-1$
 		menuItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				newSRXDocument(false);
+				newSRXDocument(1, true);
             }
 		});
 		
@@ -467,7 +466,7 @@ public class SRXEditor {
 		rm.setCommand(menuItem, "file.newWithSample"); //$NON-NLS-1$
 		menuItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent event) {
-				newSRXDocument(true);
+				newSRXDocument(2, true);
             }
 		});
 		
@@ -797,19 +796,40 @@ public class SRXEditor {
 		setSurfaceData();
 		updateLanguageRuleList();
 	}
-	
-	private boolean newSRXDocument (boolean withSimpleDefault) {
-		if ( !checkIfRulesNeedSaving() ) return false;
+
+	/**
+	 * Creates a new document.
+	 * @param defaultContent indicates what initial content to set:
+	 * 0=empty, 1=default group/map, 2=default group/map and a few simple rules
+	 * @param checkIfNeedSaving true to check if the old rules need saving.
+	 * @return true if the new document was created.
+	 */
+	private boolean newSRXDocument (int defaultContent,
+		boolean checkIfNeedSaving)
+	{
+		// Check if we need to save the previous document
+		if ( checkIfNeedSaving ) {
+			if ( !checkIfRulesNeedSaving() ) return false;
+		}
+		// Create the new document
 		srxDoc = new SRXDocument();
 		srxPath = null;
 		updateCaption();
 		
-		if ( withSimpleDefault ) {
+		switch ( defaultContent ) {
+		case 1: // Just an empty default group
+			srxDoc.addLanguageRule(Res.getString("SRXEditor.defaultSetName"), new ArrayList<Rule>()); //$NON-NLS-1$
+			srxDoc.addLanguageMap(new LanguageMap(".*", Res.getString("SRXEditor.defaultSetName"))); //$NON-NLS-1$ //$NON-NLS-2$
+			srxDoc.setModified(false);
+			break;
+		case 2: // Extra simple rules
 			ArrayList<Rule> list = new ArrayList<Rule>();
 			list.add(new Rule("([A-Z]\\.){2,}", "\\s", false)); //$NON-NLS-1$ //$NON-NLS-2$
 			list.add(new Rule("\\.", "\\s", true)); //$NON-NLS-1$ //$NON-NLS-2$
 			srxDoc.addLanguageRule(Res.getString("SRXEditor.defaultSetName"), list); //$NON-NLS-1$
 			srxDoc.addLanguageMap(new LanguageMap(".*", Res.getString("SRXEditor.defaultSetName"))); //$NON-NLS-1$ //$NON-NLS-2$
+			srxDoc.setModified(false);
+			break;
 		}
 		
 		updateAll();

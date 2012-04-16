@@ -23,6 +23,7 @@ package net.sf.okapi.common;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -275,5 +276,11 @@ public class ClassUtilTest {
 			
 		} catch (Exception e) {				
 		}
+	}
+	
+	@Test
+	public void testResourcePath() {
+		assertTrue(new File(ClassUtil.getResourcePath(getClass(), "/test_path1.txt")).exists());
+		assertTrue(new File(ClassUtil.getResourcePath(getClass(), "test_path2.txt")).exists());
 	}
 }

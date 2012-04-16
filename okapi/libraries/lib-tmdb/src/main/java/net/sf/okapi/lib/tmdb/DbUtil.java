@@ -22,6 +22,7 @@ package net.sf.okapi.lib.tmdb;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -30,9 +31,6 @@ import net.sf.okapi.common.Util;
 import net.sf.okapi.common.filterwriter.GenericContent;
 import net.sf.okapi.common.resource.Code;
 import net.sf.okapi.common.resource.TextFragment;
-import net.sf.okapi.lib.tmdb.lucene.OField;
-import net.sf.okapi.lib.tmdb.lucene.OTranslationUnitInput;
-import net.sf.okapi.lib.tmdb.lucene.OTranslationUnitVariant;
 
 public class DbUtil {
 	
@@ -234,41 +232,36 @@ public class DbUtil {
 	    }
 	    return res;
 	}
-	
-	public static OTranslationUnitInput getFieldsAsIndexable (String id,
-		LinkedHashMap<String, Object> segMap)
-	{
-		OTranslationUnitInput inTu = new OTranslationUnitInput(id);
-	
-		for ( String fieldname : segMap.keySet() ) {
-			//skip codes they will be added below
-			if ( fieldname.startsWith(DbUtil.CODES_PREFIX) ) {
-				continue;
-			}
-			
-			//indexable field
-			if ( fieldname.startsWith(DbUtil.TEXT_PREFIX) ) {
-				String loc = DbUtil.getFieldLocale(fieldname);
-				String text = (String) segMap.get(fieldname);
-				
-				TextFragment tf;
-				
-				//ANY CORRESPONDING CODES
-				if ( segMap.containsKey(DbUtil.CODES_PREFIX+loc) ) {
-					String codes = (String) segMap.get(DbUtil.CODES_PREFIX+loc);
-					tf = new TextFragment(text, Code.stringToCodes(codes));
-				}
-				else {
-					tf = new TextFragment(text);
-				}
-				
-				inTu.add(new OTranslationUnitVariant(loc, tf));
-			}
-			else {
-				inTu.setField(new OField(fieldname, (String)segMap.get(fieldname)));
-			}
+
+	/**
+	 * Converts the index information stored in the TM from its string format to 
+	 * a list of field names.
+	 * @param data the stored string.
+	 * @return the resulting list of fields, or null if the string was null or empty.
+	 */
+	public static List<String> indexInfoFromString (String data) {
+		ArrayList<String> fields = null;
+		if ( !Util.isEmpty(data) ) {
+			String[] tmpList = data.split("\t");
+			fields = new ArrayList<String>(Arrays.asList(tmpList));
 		}
-		return inTu;
+		return fields;
+	}
+	
+	/**
+	 * Converts the index information stored in the TM from its list form
+	 * to the string to store.
+	 * @param data the list to convert.
+	 * @return the string to store, or null or the list was null or empty.
+	 */
+	public static String indexInfoToString (List<String> data) {
+		StringBuilder tmp = new StringBuilder();
+		if ( Util.isEmpty(data) ) return null;
+		for ( String fn : data ) {
+			if ( tmp.length() > 0 ) tmp.append("\t");
+			tmp.append(fn);
+		}
+		return tmp.toString();
 	}
 	
 }

@@ -42,7 +42,6 @@ import net.sf.okapi.common.resource.ITextUnit;
 import net.sf.okapi.common.resource.TextUnit;
 import net.sf.okapi.common.resource.TextFragment.TagType;
 import net.sf.okapi.lib.segmentation.LanguageMap;
-import net.sf.okapi.lib.segmentation.RuleInfo;
 import net.sf.okapi.lib.segmentation.SRXDocument;
 
 import org.junit.Before;

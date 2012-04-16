@@ -186,42 +186,44 @@ public class SegmentationStep extends BasePipelineStep {
 			}
 		}
 		
-		TextContainer trgCont = tu.getTarget(targetLocale);
-
-		// Segment target if requested
-		if ( params.segmentTarget && ( trgCont != null )) {
-			if ( params.getSegmentationStrategy() == SegmStrategy.OVERWRITE_EXISTING ||
-					!trgCont.hasBeenSegmented() ) {
-				trgSeg.computeSegments(trgCont);
-				trgCont.getSegments().create(trgSeg.getRanges());
+		if (targetLocale != null) {
+			TextContainer trgCont = tu.getTarget(targetLocale);
+	
+			// Segment target if requested
+			if ( params.segmentTarget && ( trgCont != null )) {
+				if ( params.getSegmentationStrategy() == SegmStrategy.OVERWRITE_EXISTING ||
+						!trgCont.hasBeenSegmented() ) {
+					trgSeg.computeSegments(trgCont);
+					trgCont.getSegments().create(trgSeg.getRanges());
+				}
+				else if (params.getSegmentationStrategy() == SegmStrategy.DEEPEN_EXISTING) {
+					// Has been segmented or not (if unsegmented, it's still 1 segment)
+					deepenSegmentation(trgCont, trgSeg);
+				}
 			}
-			else if (params.getSegmentationStrategy() == SegmStrategy.DEEPEN_EXISTING) {
-				// Has been segmented or not (if unsegmented, it's still 1 segment)
-				deepenSegmentation(trgCont, trgSeg);
+			
+			// Make sure we have target content if needed, segmentation is incurred by the variant source 
+			if ( params.copySource ) {
+				trgCont = tu.createTarget(targetLocale, false, IResource.COPY_ALL);
 			}
-		}
-		
-		// Make sure we have target content if needed, segmentation is incurred by the variant source 
-		if ( params.copySource ) {
-			trgCont = tu.createTarget(targetLocale, false, IResource.COPY_ALL);
-		}
-
-		// If requested, verify that we have one-to-one match
-		// This is needed only if we do have a target
-		if ( params.checkSegments && ( trgCont != null)) {
-			if ( trgCont.getSegments().count() != tu.getSource().getSegments().count() ) {
-				// Not the same number of segments
-				logger.warning(String.format("Text unit id='%s': Source and target do not have the same number of segments.",
-					tu.getId()));
-			}
-			// Otherwise make sure we have matches
-			else {
-				ISegments trgSegs = trgCont.getSegments();
-				for ( Segment seg : tu.getSource().getSegments() ) {
-					if ( trgSegs.get(seg.id) == null ) {
-						// No target segment matching source segment seg.id
-						logger.warning(String.format("Text unit id='%s': No target match found for source segment id='%s'",
-							tu.getId(), seg.id));
+	
+			// If requested, verify that we have one-to-one match
+			// This is needed only if we do have a target
+			if ( params.checkSegments && ( trgCont != null)) {
+				if ( trgCont.getSegments().count() != tu.getSource().getSegments().count() ) {
+					// Not the same number of segments
+					logger.warning(String.format("Text unit id='%s': Source and target do not have the same number of segments.",
+						tu.getId()));
+				}
+				// Otherwise make sure we have matches
+				else {
+					ISegments trgSegs = trgCont.getSegments();
+					for ( Segment seg : tu.getSource().getSegments() ) {
+						if ( trgSegs.get(seg.id) == null ) {
+							// No target segment matching source segment seg.id
+							logger.warning(String.format("Text unit id='%s': No target match found for source segment id='%s'",
+								tu.getId(), seg.id));
+						}
 					}
 				}
 			}

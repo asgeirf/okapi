@@ -139,7 +139,7 @@ public class SRXDocumentTest {
 		tf.append(" Two.");
 		tf.append(TagType.CLOSING, "b", "</b>");
 		TextContainer tc = new TextContainer(tf);
-		seg.setOptions(true, true, true, false, false, false, false);
+		seg.setOptions(true, true, true, false, false, false, false, true);
 		seg.computeSegments(tc);
 		// "One.XX Two.YY" --> "[One.XX][ Two.YY]"
 		List<Range> ranges = seg.getRanges();
@@ -147,7 +147,7 @@ public class SRXDocumentTest {
 		assertEquals(ranges.size(), 2);
 		assertEquals(ranges.get(0).end, 6);
 		assertEquals(ranges.get(1).start, 6);
-		seg.setOptions(true, false, true, false, false, false, false);
+		seg.setOptions(true, false, true, false, false, false, false, true);
 		seg.computeSegments(tc);
 		// "One.XX Two.YY" --> "[One.][XX Two.YY]"
 		ranges = seg.getRanges();

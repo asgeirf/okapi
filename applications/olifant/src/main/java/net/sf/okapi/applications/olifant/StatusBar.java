@@ -87,7 +87,11 @@ class StatusBar extends Composite {
 	void setPage (long current,
 		long numberOfPages)
 	{
-		if (( current < 0 ) || ( numberOfPages < 1 )) pageLabel.setText(""); //$NON-NLS-1$
-		else pageLabel.setText(String.format("page %d of %d", current+1, numberOfPages)); //$NON-NLS-1$
+		if (( current < 0 ) || ( numberOfPages < 1 )) {
+			pageLabel.setText(String.format("pages: %d", numberOfPages));
+		}
+		else {
+			pageLabel.setText(String.format("page %d of %d", current+1, numberOfPages));
+		}
 	}
 }

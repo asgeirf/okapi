@@ -445,38 +445,45 @@ public class XINIReader {
 			if (fieldContent instanceof Seg) {
 
 				Seg seg = (Seg) fieldContent;
-				int segId = seg.getSegID();
-				boolean collapseIfPreviousEmpty = false;
+				TextFragment tf = processSegment(seg);
 
-				TextFragment tf = processSegment((Seg) fieldContent);
+				Integer origSegId = seg.getSegmentIDBeforeSegmentation();
+				boolean isUnsegmentedXini = origSegId == null;
+				boolean hasSameOrigSegIdAsPreviousSegId = origSegId != null && origSegId.equals(previousOriginalSegmentId);
 
-				if (seg.getSegmentIDBeforeSegmentation() == null ||
-						!seg.getSegmentIDBeforeSegmentation().equals(previousOriginalSegmentId)) {
+				if (isUnsegmentedXini || !hasSameOrigSegIdAsPreviousSegId) {
 					if (tu != null)
 						events.add(new Event(EventType.TEXT_UNIT, tu));
-					tu = new TextUnit(idGen.createId());
-					tc = null;
-					tu.setProperty(new Property(XINIProperties.SEGMENT_ID.value(), segId + ""));
-					if (((Seg) fieldContent).isEmptyTranslation() != null)
-						tu.setProperty(new Property(XINIProperties.EMPTY_TRANSLATION.value(), ((Seg) fieldContent).isEmptyTranslation().toString()));
-					collapseIfPreviousEmpty = true;
-				}
-
-				if (tc == null) {
+					tu = createNewTextUnit(seg);
 					tc = new TextContainer(tf);
+					tu.setSource(tc);
 				}
 				else
-					tc.getSegments().append(tf, collapseIfPreviousEmpty);
-				tu.setSource(tc);
+					tc.getSegments().append(tf);
 
-				previousOriginalSegmentId = seg.getSegmentIDBeforeSegmentation();
+				previousOriginalSegmentId = origSegId;
 			}
 		}
-
 		if (tu != null)
 			events.add(new Event(EventType.TEXT_UNIT, tu));
 
 		return events;
+	}
+
+	private ITextUnit createNewTextUnit(Seg seg) {
+		ITextUnit tu;
+		tu = new TextUnit(idGen.createId());
+
+		int segId;
+		if (seg.getSegmentIDBeforeSegmentation() != null)
+			segId = seg.getSegmentIDBeforeSegmentation();
+		else
+			segId = seg.getSegID();
+
+		tu.setProperty(new Property(XINIProperties.SEGMENT_ID.value(), segId + ""));
+		if (seg.isEmptyTranslation() != null)
+			tu.setProperty(new Property(XINIProperties.EMPTY_TRANSLATION.value(), seg.isEmptyTranslation().toString()));
+		return tu;
 	}
 
 	private TextFragment processSegment(Seg xiniSeg) {

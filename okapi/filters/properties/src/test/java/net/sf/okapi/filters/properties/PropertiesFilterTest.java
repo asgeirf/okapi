@@ -282,7 +282,6 @@ public class PropertiesFilterTest {
 		Parameters p = (Parameters)filter.getParameters();
 		p.setSubfilter("okf_html");
 		String snippet = "Key1=<b>Text with &amp;=amp test</b>\n";
-		List<Event> el = getEvents(snippet);
 		String result = FilterTestDriver.generateOutput(getEvents(snippet),
 			filter.getEncoderManager(), locEN);
 		assertEquals(snippet, result);

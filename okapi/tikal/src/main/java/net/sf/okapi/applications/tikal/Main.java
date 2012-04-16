@@ -662,8 +662,9 @@ public class Main {
 		filtersMap.put("okf_xmlstream", "net.sf.okapi.filters.xmlstream.XmlStreamFilter");
 		filtersMap.put("okf_mosestext", "net.sf.okapi.filters.mosestext.MosesTextFilter");
 
-		if (specifiedConfigIdPath != null)
+		if ( specifiedConfigIdPath != null ) {
 			fcMapper.setCustomConfigurationsDirectory(specifiedConfigIdPath);
+		}
 	}
 	
 	private String getConfigurationId (String ext) {
@@ -757,11 +758,9 @@ public class Main {
 				// Configuration ID is a default one:
 				// Add its filter to the configuration mapper
 				fcMapper.addConfigurations(filtersMap.get(configId));
-				// Hard code case: okf_vignette requires okgf_html to be also loaded
+				// Always add okf_html because it's used as sub-filter by several filters
 				//TODO: Find a better way to handle sub-filter cases
-				if ( configId.startsWith("okf_vignette") || configId.startsWith("okf_xmlstream") ) {
-					fcMapper.addConfigurations(filtersMap.get("okf_html"));
-				}
+				fcMapper.addConfigurations(filtersMap.get("okf_html"));
 				return true;
 			}
 			// Else: Try to find the filter for that configuration

@@ -66,7 +66,7 @@ public class SRXSegmenterTest {
 	public void testChangedOptions () {
 		SRXSegmenter seg = new SRXSegmenter();
 		// Check changing options
-		seg.setOptions(false, true, false, true, true, true, true);
+		seg.setOptions(false, true, false, true, true, true, true, true);
 		assertFalse(seg.segmentSubFlows());
 		assertTrue(seg.includeStartCodes());
 		assertFalse(seg.includeEndCodes());
@@ -74,6 +74,7 @@ public class SRXSegmenterTest {
 		assertTrue(seg.oneSegmentIncludesAll());
 		assertTrue(seg.trimLeadingWhitespaces());
 		assertTrue(seg.trimTrailingWhitespaces());
+		assertTrue(seg.useJavaRegex());
 	}
 	
 	@Test
@@ -94,7 +95,7 @@ public class SRXSegmenterTest {
 	public void testSimpleSegmentationTrimLeading () {
 		SRXSegmenter seg = (SRXSegmenter)createSegmenterWithRules(LocaleId.fromString("en"));
 		seg.setOptions(seg.segmentSubFlows(), seg.includeStartCodes(), seg.includeEndCodes(), seg.includeIsolatedCodes(),
-			seg.oneSegmentIncludesAll(), true, false);
+			seg.oneSegmentIncludesAll(), true, false, seg.useJavaRegex());
 		TextContainer tc = new TextContainer(" Part 1.  Part 2. ");
 		ISegments segments = tc.getSegments();
 		int n = seg.computeSegments(tc);
@@ -109,7 +110,7 @@ public class SRXSegmenterTest {
 	public void testSimpleSegmentationTrimTrailing () {
 		SRXSegmenter seg = (SRXSegmenter)createSegmenterWithRules(LocaleId.fromString("en"));
 		seg.setOptions(seg.segmentSubFlows(), seg.includeStartCodes(), seg.includeEndCodes(), seg.includeIsolatedCodes(),
-			seg.oneSegmentIncludesAll(), false, true);
+			seg.oneSegmentIncludesAll(), false, true, seg.useJavaRegex());
 		TextContainer tc = new TextContainer(" Part 1.  Part 2. ");
 		ISegments segments = tc.getSegments();
 		int n = seg.computeSegments(tc);
@@ -124,7 +125,7 @@ public class SRXSegmenterTest {
 	public void testSimpleSegmentationOneIsAll () {
 		SRXSegmenter seg = (SRXSegmenter)createSegmenterWithRules(LocaleId.fromString("en"));
 		seg.setOptions(seg.segmentSubFlows(), seg.includeStartCodes(), seg.includeEndCodes(), seg.includeIsolatedCodes(),
-			true, true, true);
+			true, true, true, seg.useJavaRegex());
 		TextContainer tc = new TextContainer(" Part 1  ");
 		ISegments segments = tc.getSegments();
 		int n = seg.computeSegments(tc);
@@ -161,7 +162,7 @@ public class SRXSegmenterTest {
 	public void testCodedSegmentationDefault1 () {
 		SRXSegmenter seg = (SRXSegmenter)createSegmenterWithRules(LocaleId.fromString("en"));
 		seg.setOptions(seg.segmentSubFlows(), false, true, false,
-			false, false, false);
+			false, false, false, seg.useJavaRegex());
 		TextContainer tc = createCodedText();
 		ISegments segments = tc.getSegments();
 		int n = seg.computeSegments(tc);
@@ -179,7 +180,7 @@ public class SRXSegmenterTest {
 	public void testCodedSegmentationNotDefault1 () {
 		SRXSegmenter seg = (SRXSegmenter)createSegmenterWithRules(LocaleId.fromString("en"));
 		seg.setOptions(seg.segmentSubFlows(), true, false, true,
-			false, false, false);
+			false, false, false, seg.useJavaRegex());
 		TextContainer tc = createCodedText();
 		ISegments segments = tc.getSegments();
 		int n = seg.computeSegments(tc);
@@ -197,7 +198,7 @@ public class SRXSegmenterTest {
 	public void testCodedSegmentationDefault2 () {
 		SRXSegmenter seg = (SRXSegmenter)createSegmenterWithRules(LocaleId.fromString("en"));
 		seg.setOptions(seg.segmentSubFlows(), false, true, false,
-			false, false, false);
+			false, false, false, seg.useJavaRegex());
 		TextContainer tc = createCodedText2();
 		ISegments segments = tc.getSegments();
 		int n = seg.computeSegments(tc);
@@ -215,7 +216,7 @@ public class SRXSegmenterTest {
 	public void testCodedSegmentationNotDefault2 () {
 		SRXSegmenter seg = (SRXSegmenter)createSegmenterWithRules(LocaleId.fromString("en"));
 		seg.setOptions(seg.segmentSubFlows(), true, false, true,
-			false, false, false);
+			false, false, false, seg.useJavaRegex());
 		TextContainer tc = createCodedText2();
 		ISegments segments = tc.getSegments();
 		int n = seg.computeSegments(tc);
